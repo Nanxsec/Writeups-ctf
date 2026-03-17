@@ -1,4 +1,4 @@
-# Writeups-ctf by Nanoxsec
+# Writeups CTF by Nanoxsec
 Repositório onde irei colocar todos os meus writeups feitos! A medida que for fazendo os writeups, vou adicionar aqui
 
 
