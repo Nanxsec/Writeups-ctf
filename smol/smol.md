@@ -159,6 +159,8 @@ Busybox foi usado porque o netcat padrão do sistema não suporta a opção -e. 
 --> Achei o arquivo interessante porém não dava para pegar o arquivo! Então como eu não achei a senha dele e nenhum binário que rodasse
 com a permissão dele, resolvi olhar no arquivo /etc/pam.d/su onde mostra as permissões ao utilizar o su!
 
+--> A configuração do PAM permitia troca de usuário sem autenticação adequada, possibilitando escalonamento lateral sem necessidade de senha
+
 <img width="820" height="221" alt="imagem" src="https://github.com/user-attachments/assets/5dca77a5-8d47-4320-a9d5-31ffcfcf1906" />
 
 Para minha surpresa, eu poderia subir privilégio apenas digitando:
