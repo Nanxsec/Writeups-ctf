@@ -51,6 +51,11 @@
     - http://www.smol.thm/wp-content/plugins/jsmol2wp/php/jsmol.php?isform=true&call=getRawDataFromDatabase&query=php://filter/resource=../../../../wp-config.php
       |_> Essa poc já revela as credênciais no arquivo de configurações do banco de dados!
       |_> Com elas também é possível logar na aplicação!
+      |_> O uso do wrapper `php://filter` permite ler arquivos PHP sem executá-los,
+
+isso permite acesso total ao banco de dados, podendo levar a dump de usuários, hashes e potencial comprometimento completo da aplicação
+
+retornando seu conteúdo em texto puro.
 
 <img width="1673" height="641" alt="imagem" src="https://github.com/user-attachments/assets/79effd7a-6f9b-42f1-afb2-189de14df8e6" />
 
