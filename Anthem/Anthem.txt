@@ -1,0 +1,76 @@
+RESULTADO RUSTSCAN:
+
+Open 10.66.176.11:80
+Open 10.66.176.11:3389
+
+RESULTADO NMAP:
+
+PORT     STATE SERVICE       VERSION
+80/tcp   open  http          Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+| http-robots.txt: 4 disallowed entries 
+|_/bin/ /config/ /umbraco/ /umbraco_client/
+|_http-title: Anthem.com - Welcome to our blog
+3389/tcp open  ms-wbt-server Microsoft Terminal Services
+|_ssl-date: 2026-03-14T17:48:07+00:00; 0s from scanner time.
+| rdp-ntlm-info: 
+|   Target_Name: WIN-LU09299160F
+|   NetBIOS_Domain_Name: WIN-LU09299160F
+|   NetBIOS_Computer_Name: WIN-LU09299160F
+|   DNS_Domain_Name: WIN-LU09299160F
+|   DNS_Computer_Name: WIN-LU09299160F
+|   Product_Version: 10.0.17763
+|_  System_Time: 2026-03-14T17:47:54+00:00
+| ssl-cert: Subject: commonName=WIN-LU09299160F
+| Not valid before: 2026-03-13T17:45:12
+|_Not valid after:  2026-09-12T17:45:12
+Service Info: OS: Windows; CPE: cpe:/o:microsoft:windows
+
+ffuf -u http://10.66.176.11/FUZZ -H "Host: 10.66.176.11" -w /usr/share/dirb/wordlists/common.txt -i -ic -mc 200,301,302 -c
+
+                        [Status: 200, Size: 5349, Words: 1311, Lines: 127, Duration: 975ms]
+archive                 [Status: 301, Size: 118, Words: 6, Lines: 4, Duration: 351ms]
+Archive                 [Status: 301, Size: 118, Words: 6, Lines: 4, Duration: 360ms]
+authors                 [Status: 200, Size: 4070, Words: 769, Lines: 112, Duration: 603ms]
+blog                    [Status: 200, Size: 5394, Words: 1311, Lines: 127, Duration: 466ms]
+Blog                    [Status: 200, Size: 5394, Words: 1311, Lines: 127, Duration: 480ms]
+categories              [Status: 200, Size: 3541, Words: 561, Lines: 104, Duration: 589ms]
+install                 [Status: 302, Size: 126, Words: 6, Lines: 4, Duration: 2012ms]
+robots.txt              [Status: 200, Size: 192, Words: 17, Lines: 11, Duration: 2461ms]
+rss                     [Status: 200, Size: 1873, Words: 240, Lines: 30, Duration: 2883ms]
+RSS                     [Status: 200, Size: 1873, Words: 240, Lines: 30, Duration: 2833ms]
+search                  [Status: 200, Size: 3468, Words: 520, Lines: 93, Duration: 2038ms]
+Search                  [Status: 200, Size: 3468, Words: 520, Lines: 93, Duration: 2022ms]
+sitemap                 [Status: 200, Size: 1041, Words: 94, Lines: 30, Duration: 609ms]
+SiteMap                 [Status: 200, Size: 1041, Words: 94, Lines: 30, Duration: 617ms]
+tags                    [Status: 200, Size: 3594, Words: 579, Lines: 105, Duration: 1764ms]
+umbraco                 [Status: 200, Size: 4078, Words: 710, Lines: 96, Duration: 1852ms]
+
+
+http://anthem.thm/umbraco/#/login
+
+JD@anthem.com
+Author
+Jane Doe
+
+Author for Anthem blog
+
+Author
+James Orchard Halliwell 
+
+admin managed
+
+Solomon Grundy
+UmbracoIsTheBest!
+SG@anthem.com
+
+# Use for all search robots
+User-agent: *
+
+# Define the directories not to crawl
+Disallow: /bin/
+Disallow: /config/
+Disallow: /umbraco/
+Disallow: /umbraco_client/
+
+
+ChangeMeBaby1MoreTime

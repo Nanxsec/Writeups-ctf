@@ -1,0 +1,62 @@
+rustscan:
+
+Open 10.67.163.141:22
+Open 10.67.163.141:80
+Open 10.67.163.141:3306
+
+nmap:
+
+PORT     STATE SERVICE VERSION
+22/tcp   open  ssh     OpenSSH 7.6p1 Ubuntu 4ubuntu0.3 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   2048 c0:d5:41:ee:a4:d0:83:0c:97:0d:75:cc:7b:10:7f:76 (RSA)
+|   256 83:82:f9:69:19:7d:0d:5c:53:65:d5:54:f6:45:db:74 (ECDSA)
+|_  256 4f:91:3e:8b:69:69:09:70:0e:82:26:28:5c:84:71:c9 (ED25519)
+80/tcp   open  http    Apache httpd 2.4.29 ((Ubuntu))
+|_http-server-header: Apache/2.4.29 (Ubuntu)
+|_http-title: Empline
+3306/tcp open  mysql   MySQL 5.5.5-10.1.48-MariaDB-0ubuntu0.18.04.1
+| mysql-info: 
+|   Protocol: 10
+|   Version: 5.5.5-10.1.48-MariaDB-0ubuntu0.18.04.1
+|   Thread ID: 87
+|   Capabilities flags: 63487
+|   Some Capabilities: ConnectWithDatabase, LongColumnFlag, DontAllowDatabaseTableColumn, SupportsCompression, Support41Auth, InteractiveClient, Speaks41ProtocolOld, SupportsTransactions, SupportsLoadDataLocal, IgnoreSigpipes, Speaks41ProtocolNew, IgnoreSpaceBeforeParenthesis, FoundRows, LongPassword, ODBCClient, SupportsMultipleStatments, SupportsMultipleResults, SupportsAuthPlugins
+|   Status: Autocommit
+|   Salt: ^*TK\j"dSV4?~~!%5x~1
+|_  Auth Plugin Name: mysql_native_password
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+
+fuzzing:
+
+no código fonte tem uma url levando para um subdominio: job.empline.thm
+contém um cms chamado opencats versão 0.9.4
+contem um exploit que permite RCE
+usei e peguei shell
+
+define('TESTER_LOGIN',     'john@mycompany.net');
+define('TESTER_PASSWORD',  'john99');
+define('TESTER_FIRSTNAME', 'John');
+define('TESTER_LASTNAME',  'Anderson');
+define('TESTER_FULLNAME',  'John Anderson');
+define('TESTER_USER_ID',   4);
+
+
+define('DATABASE_USER', 'james');
+define('DATABASE_PASS', 'ng6pUFvsGNtw');
+define('DATABASE_HOST', 'localhost');
+define('DATABASE_NAME', 'opencats');
+
+logando pela database do mysql com as credenciais encontradas, eu consegui
+pegar a senha do george:
+
+admin : b67b5ecc5d8902ba59c65596e4c053ec
+cats@rootadmin : cantlogin
+george : 86d0dfda99dbebc424eb4407947356ac
+james : e53fbdb31890ff3bc129db0e27c473c9
+
+usei meu script pra quebrar a senha:
+
+Username: george
+Password: pretonnevippasempre

