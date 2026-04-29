@@ -1,0 +1,37 @@
+--> sudo rustscan -a 10.65.165.83
+
+Open 10.65.165.83:22
+Open 10.65.165.83:80
+Open 10.65.165.83:445
+
+
+--> sudo nmap -sV -Sc -Pn -p 22,80,445
+
+22/tcp  open  ssh     OpenSSH 8.2p1 Ubuntu 4ubuntu0.3 (Ubuntu Linux; protocol 2.0)                     │.htaccessOLD2           [Status: 403, Size: 277, Words: 20, Lines: 10, Duration: 157ms]
+| ssh-hostkey:                                                                                         │.htpasswd               [Status: 403, Size: 277, Words: 20, Lines: 10, Duration: 150ms]
+|   3072 a3:6a:9c:b1:12:60:b2:72:13:09:84:cc:38:73:44:4f (RSA)                                         │.htaccess~              [Status: 403, Size: 277, Words: 20, Lines: 10, Duration: 156ms]
+|   256 b9:3f:84:00:f4:d1:fd:c8:e7:8d:98:03:38:74:a1:4d (ECDSA)                                        │.htaccess_sc            [Status: 403, Size: 277, Words: 20, Lines: 10, Duration: 157ms]
+|_  256 d0:86:51:60:69:46:b2:e1:39:43:90:97:a6:af:96:93 (ED25519)                                      │.htaccessBAK            [Status: 403, Size: 277, Words: 20, Lines: 10, Duration: 157ms]
+80/tcp  open  http    Apache httpd 2.4.41 ((Ubuntu))                                                   │.htaccessOLD            [Status: 403, Size: 277, Words: 20, Lines: 10, Duration: 157ms]
+|_http-server-header: Apache/2.4.41 (Ubuntu)                                                           │.htaccess_orig          [Status: 403, Size: 277, Words: 20, Lines: 10, Duration: 157ms]
+|_http-title: Apache2 Ubuntu Default Page: It works                                                    │.htpasswds              [Status: 403, Size: 277, Words: 20, Lines: 10, Duration: 150ms]
+445/tcp open  http    Apache httpd 2.4.41 ((Ubuntu))                                                   │.htusers                [Status: 403, Size: 277, Words: 20, Lines: 10, Duration: 150ms]
+|_http-title: Apache2 Ubuntu Default Page: It works                                                    │.htpasswd_test          [Status: 403, Size: 277, Words: 20, Lines: 10, Duration: 150ms]
+|_http-server-header: Apache/2.4.41 (Ubuntu)                                                           │.htpasswd-old           [Status: 403, Size: 277, Words: 20, Lines: 10, Duration: 150ms]
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel                                                │admin                   [Status: 301, Size: 312, Words: 20, Lines: 10, Duration: 151ms]
+                                                                                                       │admin/                  [Status: 200, Size: 932, Words: 66, Lines: 17, Duration: 152ms]
+Host script results:                                                                                   │admin/.htaccess         [Status: 403, Size: 277, Words: 20, Lines: 10, Duration: 157ms]
+|_smb2-time: Protocol negotiation failed (SMB2)
+
+
+
+
+--> ffuf -u http://10.65.165.83/FUZZ -H "Host: 10.65.165.83" -w ~/Downloads/wordlists/admin.txt -i -ic -c -mc 200,301,403
+
+/admin --> contém uma id_rsa
+--> VHJ1c3QgbWUgaXQgaXMgbm90IHRoaXMgZWFzeS4ubm93IGdldCBiYWNrIHRvIGVudW1lcmF0aW9uIDpE
+	|_> Trust me it is not this easy..now get back to enumeration :D
+	
+--> http://10.65.165.83:445/management/admin/login.php -> ' OR 1=1 -- -;# (LOGADO COM PAYLOAD SQLi)
+
+

